@@ -57,98 +57,9 @@ chan
 */
 ```
 
-### Basic Example
+### More Examples
 
-```js
-import createPubChan from 'pubchan';
-
-const chan = createPubChan();
-
-// subscribe to ALL events synchronously ($ prefix denotes a possible utility event)
-chan
-  .subscribe()
-  .to('$all', '$close')
-  .do((ref, ids) => {
-    console.log('EVENTS EMITTED: ', ids);
-    if (ids.has('$closed')) {
-      // handle channel closure
-      console.log('Channel Closed!')
-    } else {
-      if (ref.chan.size === 2) {
-        // when we are the only ones left, close the channel
-        console.log('CLOSING CHANNEL!');
-        ref.chan.close();
-      }  
-    }
-    return '*';
-  });
-
-// subscribe to 'foo' and 'bar' events asynchronously and add two different
-// callbacks which can be separately cancelled easily
-
-// subscription.cancel() / subscription.do() / subscription.to() / subscription.size
-// subscriptions can occur with anything since we use `Map` and `Set`
-// under the hood.
-const fn = () => {};
-
-const subscription = chan
-  .subscribe({
-    async: true,
-  })
-  .to('foo', 'bar', fn)
-  .do((ref, ids, ...args) => {
-    console.log('First Callback! ');
-    if (ids.has('kill')) {
-      // cancel the entire subscription
-      ref.subscription.cancel();
-      return 'killed';
-    }
-  })
-  .do((ref, ids, ...args) => {
-    console.log('Second Callback! ');
-    if (ids.has('foo')) {
-      // handle foo
-    }
-    if (ids.has('bar')) {
-      // handle bar
-      // cancel this callback only
-      ref.cancel();
-      return 'cancelled';
-    }
-  });
-
-
-// emit bar twice -- second callback will only happen twice but foo or bar
-// will happen both times.  
-chan
-  .emit('bar')
-  .send()
-  .then(results => {
-    console.log('First Bar Emit Complete! ', results);
-    // ['*', undefined, 'cancelled']
-    return chan.emit('bar').send();
-  })
-  .then(results => {
-    console.log('Second bar emit complete ', results);
-    // ['*', undefined]
-    // send 'foo' and 'kill' events with args 'one' and 'two'
-    return chan.emit('foo', 'kill').with('one', 'two').send()
-  })
-  .then(results => {
-    console.log('Subscription Killed!', results)
-    // ['*', 'killed']
-    return chan.emit('foo', 'bar', 'kill').send();
-  })
-  .then(results => {
-    console.log('Only Match All is Left! ', results)
-    // ['*']
-  })
-  .catch(err => {
-    // handle any errors in the chain
-  });
-
-
-```
+For more examples you can check out the [examples directory](https://github.com/Dash-OS/pubchan/tree/master/examples)
 
 ## API Reference
 
@@ -156,7 +67,7 @@ chan
 
 ### Module Exports
 
-#### createPubChan (Function) (default)
+#### `createPubChan` (Function) (default)
 
 Our default export, creates an instance of `PubChan`.
 
@@ -165,7 +76,7 @@ import createPubChan from 'pubchan'
 const chan = createPubChan()
 ```
 
-#### PubChan (Class)
+#### `PubChan` (Class)
 
 Generally using the `createPubChan` function is the recommended method of creating a new channel.  However, you can also import the class directly if needed (can be useful for adding as flow type).
 
@@ -174,7 +85,7 @@ import { PubChan } from 'pubchan'
 const chan = new PubChan()
 ```
 
-#### Subscriber (Class)
+#### `Subscriber` (Class)
 
 This should have no use other than possibly to use for flow-types.  A subscriber is useless unless created by an interface which matches the `PubChan`.
 
