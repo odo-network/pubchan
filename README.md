@@ -26,13 +26,33 @@ projects will benefit!
 ### Simple
 
 ```js
+/* @flow */
+
 import createPubChan from 'pubchan';
+
 const chan = createPubChan();
 
-chan.subscribe('foo').do(() => console.log('foo 1!'))
-chan.subscribe('foo').do(() => console.log('foo 2!'))
+chan
+  .subscribe({ async: true })
+  .to('foo')
+  .do(() => console.log('foo 1!'));
 
-chan.emit('foo').send().then(() => console.log('Finished Emitting foo!'));
+chan
+  .subscribe()
+  .to('foo')
+  .do(() => console.log('foo 2!'));
+
+chan
+  .emit('foo')
+  .send()
+  .then(() => console.log('Finished Emitting foo!'));
+
+/*
+  // Console Output -->
+  foo 2!
+  foo 1!
+  Finished Emitting foo!
+*/
 ```
 
 ### Basic Example
