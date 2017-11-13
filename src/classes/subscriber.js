@@ -12,17 +12,19 @@ import type {
   PubChan$IDSet,
 } from '../types';
 
+import type { $StrictObject } from '../types/utils';
+
 import type PubChan from './pubchan';
 
 // import { ACTIVE } from '../context';
 
 function addSubscriberToEvent(sub, e) {
-  const set = sub.PubChan.listeners.get(e) || new Set();
+  const set = sub.pubchan.listeners.get(e) || new Set();
   set.add(sub);
   sub.pathrefs.set(e, set);
-  sub.PubChan.listeners.set(e, set);
+  sub.pubchan.listeners.set(e, set);
 }
-//
+
 function removeSubscriber(sub) {
   // console.log('Removing Subscriber! ');
   // ACTIVE.delete(sub);
@@ -31,7 +33,7 @@ function removeSubscriber(sub) {
     sub.pathrefs.delete(e);
     if (set.size === 0) {
       // cleanup the PubChan map when no other listeners on this event exist
-      sub.PubChan.listeners.delete(e);
+      sub.pubchan.listeners.delete(e);
     }
   });
 }
@@ -67,7 +69,7 @@ function handleAsyncCallback(
     }
   });
 }
-//
+
 function executeCallback(
   ref: PubChan$Ref,
   ids: PubChan$IDSet,
@@ -81,7 +83,7 @@ function executeCallback(
 }
 
 export default class Subscriber {
-  +PubChan: PubChan;
+  +pubchan: PubChan;
   +callbacks: Set<PubChan$Ref> = new Set();
   // hold refs to the sets which we are subscribed to for
   // easy access and unsubscribe.
@@ -89,9 +91,9 @@ export default class Subscriber {
 
   +options: $StrictObject<PubChan$Options>;
 
-  constructor(PubChan: PubChan, options: $Shape<PubChan$Options>): Subscriber {
+  constructor(pubchan: PubChan, options: $Shape<PubChan$Options>): Subscriber {
     this.options = getSubscriberOptions(options);
-    this.PubChan = PubChan;
+    this.pubchan = pubchan;
     return this;
   }
 
@@ -102,26 +104,26 @@ export default class Subscriber {
   get keys(): Array<PubChan$EmitID> {
     return [...this.pathrefs.keys()];
   }
-  //
+
   to = (...args: Array<PubChan$EmitIDs>) => {
     // ACTIVE.add(this);
     args.forEach(
       el =>
-        Array.isArray(el) ? this.to(...el) : addSubscriberToEvent(this, el),
+        (Array.isArray(el) ? this.to(...el) : addSubscriberToEvent(this, el)),
     );
     return this;
   };
-  //
+
   once = (
     callback: PubChan$Callback,
     onComplete?: PubChan$CompleteCallback,
   ) => {
     const ref = {
+      subscription: this,
       once: true,
       state: {},
-      callback,
-      subscription: this,
       cancel: () => handleRefCancellation(this, ref),
+      callback,
     };
     addCallbackToSubscriber(this, ref);
     if (onComplete && typeof onComplete === 'function') {
@@ -132,8 +134,8 @@ export default class Subscriber {
 
   do = (callback: PubChan$Callback, onComplete?: PubChan$CompleteCallback) => {
     const ref = {
-      state: {},
       subscription: this,
+      state: {},
       cancel: () => handleRefCancellation(this, ref),
       callback,
     };
@@ -143,6 +145,8 @@ export default class Subscriber {
     }
     return this;
   };
+
+  cancel = () => removeSubscriber(this);
 
   trigger = (pipeline: PubChan$Pipeline) => {
     const results = [];

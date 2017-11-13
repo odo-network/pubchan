@@ -16,8 +16,10 @@
     "function-paren-newline": ["error", "consistent"],
     "no-unused-expressions": "off",
     "flowtype/generic-spacing": "off",
+    "no-use-before-define": "off",
     "no-console": "off",
-    "flowtype/no-unused-expressions": "error"
+    "flowtype/no-unused-expressions": "error",
+    "max-len": ["error", { "code": 80, "ignoreComments": true, "ignoreStrings": true, "ignoreTemplateLiterals": true }]
   },
   "plugins": [
     "flowtype"

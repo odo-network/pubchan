@@ -12,8 +12,7 @@ import Subscriber from './subscriber';
 function findMatchingListeners(PubChan, matches, events, emit) {
   if (Array.isArray(events)) {
     events.forEach(event =>
-      findMatchingListeners(PubChan, matches, event, emit),
-    );
+      findMatchingListeners(PubChan, matches, event, emit));
   } else {
     emit.add(events);
     const set = PubChan.listeners.get(events);

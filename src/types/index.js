@@ -1,6 +1,6 @@
 /* @flow */
 
-import Subscriber from './classes/subscriber';
+import Subscriber from '../classes/subscriber';
 
 // type $NonArrayType<A> = $Call<<T>(Array<T> | T) => T, A>;
 
@@ -16,17 +16,6 @@ export type PubChan$Matches = PubChan$SubscriberSet;
 
 export type PubChan$SubscriberSet = Set<Subscriber>;
 
-export interface PubChan$Ref {
-  +once?: void | boolean;
-  +id?: PubChan$EmitID;
-  +state: { [key: string]: * };
-  +subscription: Subscriber;
-  +callback: PubChan$Callback;
-  +cancel: () => void;
-}
-
-export type PubChan$Listeners = Map<PubChan$EmitID, PubChan$SubscriberSet>;
-
 type Callback = (
   ref: PubChan$Ref,
   ids: Set<PubChan$EmitID>,
@@ -34,6 +23,17 @@ type Callback = (
 ) => Array<mixed> | mixed;
 
 export type PubChan$Callback = Array<Callback> | Callback;
+
+export interface PubChan$Ref {
+  +once?: void | boolean,
+  +id?: PubChan$EmitID,
+  +state: { [key: string]: * },
+  +subscription: Subscriber,
+  +callback: PubChan$Callback,
+  +cancel: () => void,
+}
+
+export type PubChan$Listeners = Map<PubChan$EmitID, PubChan$SubscriberSet>;
 
 export type PubChan$IDSet = Set<PubChan$EmitID>;
 
