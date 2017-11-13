@@ -2,6 +2,8 @@
 
 Simple yet powerful pub/sub channels for Javascript and Node.js.  
 
+Tiny, fast, type-safe, reliable pubsub event emitter with promises, result aggregation, and async/sync controls.  
+
 ## Install
 
 ```
