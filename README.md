@@ -23,12 +23,24 @@ projects will benefit!
 
 ## Example
 
+### Simple
+
+```js
+import createPubChan from 'pubchan';
+const chan = createPubChan();
+
+chan.subscribe('foo').do(() => console.log('foo 1!'))
+chan.subscribe('foo').do(() => console.log('foo 2!'))
+
+chan.emit('foo').send().then(() => console.log('Finished Emitting foo!'));
+```
+
+### Basic Example
+
 ```js
 import createPubChan from 'pubchan';
 
 const chan = createPubChan();
-
-
 
 // subscribe to ALL events synchronously ($ prefix denotes a possible utility event)
 chan
