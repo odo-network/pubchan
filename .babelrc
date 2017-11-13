@@ -1,5 +1,16 @@
 {
-  "presets": ["flow", "env", "minify"],
+  "presets": [
+    "flow",
+    [
+      "env",
+      {
+        "targets": {
+          "node": 9
+        }
+      }
+    ],
+    "minify"
+  ],
   "plugins": [
     "transform-class-properties",
     ["transform-remove-console", { "exclude": ["error", "warn"] }]
