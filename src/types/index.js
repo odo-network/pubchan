@@ -1,6 +1,7 @@
 /* @flow */
 
 import Subscriber from '../classes/subscriber';
+import PubChan from '../classes/pubchan';
 
 // type $NonArrayType<A> = $Call<<T>(Array<T> | T) => T, A>;
 
@@ -29,6 +30,7 @@ export interface PubChan$Ref {
   +id?: PubChan$EmitID,
   +state: { [key: string]: * },
   +subscription: Subscriber,
+  +chan: PubChan,
   +callback: PubChan$Callback,
   +cancel: () => void,
 }

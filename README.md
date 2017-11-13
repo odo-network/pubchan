@@ -14,6 +14,11 @@ yarn add pubchan
 npm install --save pubchan
 ```
 
+## 100% Flow Coverage
+
+Proudly built with 100% Flow Coverage and exported .flow.js files so your flow
+projects will benefit!
+
 ## Example
 
 ```js
@@ -21,12 +26,24 @@ import createPubChan from 'pubchan';
 
 const chan = createPubChan();
 
-// subscribe to ALL events synchronously (* is only used in this one case)
+
+
+// subscribe to ALL events synchronously ($ prefix denotes a possible utility event)
 chan
   .subscribe()
-  .to('*')
+  .to('$all', '$close')
   .do((ref, ids) => {
-    console.log('EVENT EMITTED: ', ids);
+    console.log('EVENTS EMITTED: ', ids);
+    if (ids.has('$closed')) {
+      // handle channel closure
+      console.log('Channel Closed!')
+    } else {
+      if (ref.chan.size === 2) {
+        // when we are the only ones left, close the channel
+        console.log('CLOSING CHANNEL!');
+        ref.chan.close();
+      }  
+    }
     return '*';
   });
 

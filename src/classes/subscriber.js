@@ -37,14 +37,13 @@ function removeSubscriber(sub) {
     }
   });
 }
-//
+
 const getSubscriberOptions = (
   options: $Shape<PubChan$Options>,
 ): $StrictObject<PubChan$Options> => ({
   async: typeof options.async === 'boolean' ? options.async : false,
-  // PubChan: options.PubChan,
 });
-//
+
 function addCallbackToSubscriber(sub: Subscriber, ref: PubChan$Ref) {
   sub.callbacks.add(ref);
 }
@@ -101,6 +100,10 @@ export default class Subscriber {
     return this.callbacks.size;
   }
 
+  get size(): number {
+    return this.callbacks.size;
+  }
+
   get keys(): Array<PubChan$EmitID> {
     return [...this.pathrefs.keys()];
   }
@@ -120,6 +123,7 @@ export default class Subscriber {
   ) => {
     const ref = {
       subscription: this,
+      chan: this.pubchan,
       once: true,
       state: {},
       cancel: () => handleRefCancellation(this, ref),
@@ -135,6 +139,7 @@ export default class Subscriber {
   do = (callback: PubChan$Callback, onComplete?: PubChan$CompleteCallback) => {
     const ref = {
       subscription: this,
+      chan: this.pubchan,
       state: {},
       cancel: () => handleRefCancellation(this, ref),
       callback,
