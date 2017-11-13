@@ -81,7 +81,7 @@ function executeCallback(
   return ref.callback(ref, ids, ...args);
 }
 
-export default class Subscriber {
+class Subscriber {
   +pubchan: PubChan;
   +callbacks: Set<PubChan$Ref> = new Set();
   // hold refs to the sets which we are subscribed to for
@@ -171,3 +171,5 @@ export default class Subscriber {
     return results;
   };
 }
+
+export default Subscriber;
