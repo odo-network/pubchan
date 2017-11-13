@@ -1,6 +1,6 @@
 {
   "name": "pubchan",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Simple yet powerful pub/sub channels",
   "main": "lib/index.js",
   "author": "Braden R. Napier",
@@ -32,7 +32,7 @@
   "scripts": {
     "flow": "flow",
     "build": "rimraf lib && npm-run-all build:babel build:flow",
-    "build:babel": "babel src --out-dir lib",
+    "build:babel": "NODE_ENV=production babel src --out-dir lib",
     "build:flow": "flow-copy-source src lib",
     "prepublish": "npm-run-all build"
   },
@@ -40,6 +40,7 @@
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.0.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-remove-console": "^6.8.5",
     "babel-preset-env": "^1.6.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-minify": "^0.2.0",

@@ -11,7 +11,7 @@ import type {
 import Subscriber from './subscriber';
 
 const MATCH_ALL_KEY = '$all';
-const MATCH_CLOSE_KEY = '$close';
+const MATCH_CLOSE_KEY = '$closed';
 
 function findMatchingListeners(PubChan, matches, events, emit) {
   if (Array.isArray(events)) {
@@ -50,9 +50,6 @@ class PubChan {
     if (this.size === 0) {
       return this;
     }
-    console.log(`
-      PubChan EMIT! ${JSON.stringify(args)}
-    `);
     const emit = new Set();
     const matches = new Set();
     const matchall = this.listeners.get(MATCH_ALL_KEY);

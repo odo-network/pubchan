@@ -1,4 +1,7 @@
 {
   "presets": ["flow", "env", "minify"],
-  "plugins": ["transform-class-properties"]
+  "plugins": [
+    "transform-class-properties",
+    ["transform-remove-console", { "exclude": ["error", "warn"] }]
+  ]
 }
