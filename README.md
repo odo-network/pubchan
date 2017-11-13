@@ -87,11 +87,15 @@ chan
 // callbacks which can be separately cancelled easily
 
 // subscription.cancel() / subscription.do() / subscription.to() / subscription.size
+// subscriptions can occur with anything since we use `Map` and `Set`
+// under the hood.
+const fn = () => {};
+
 const subscription = chan
   .subscribe({
     async: true,
   })
-  .to('foo', 'bar')
+  .to('foo', 'bar', fn)
   .do((ref, ids, ...args) => {
     console.log('First Callback! ');
     if (ids.has('kill')) {
@@ -190,17 +194,25 @@ declare class PubChan {
     matches: Set<Subscriber>,
     with: Array<mixed>,
   },
+
   +listeners: Map<mixed, Set<Subscriber>>,
+
   +subscribers: Set<Subscriber>,
+
   // how many total active subscribers do we have?
   get length(): number,
   get size(): number,
+
   emit: (...args: Array<Array<mixed> | mixed>) => this,
+
   // include args with the event emission
   with: (...args: Array<any>) => this,
+
   // send the event and optionally include args to the handlers.
   send: (...args: Array<any>) => Promise<null> | Promise<Array<any>>,
+
   close: (...args: Array<any>) => Promise<null> | Promise<Array<any>>,
+
   subscribe: (
     options?: $Shape<{|
       async: boolean,
@@ -239,11 +251,14 @@ declare interface PubChan$Ref {
 }
 
 declare class Subscriber {
+  // total number of active callbacks on the subscriber
   get length(): number,
   get size(): number,
+
   // all the ids we are subscribed to
   get keys(): Array<PubChan$EmitID>,
 
+  // subscribe to EmitIDS
   to: (...args: Array<PubChan$EmitIDs>) => this,
 
   // add a callback that will happen once then cancel itself
