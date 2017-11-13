@@ -4,8 +4,9 @@
     [
       "env",
       {
+        "debug": true,
         "targets": {
-          "node": 9
+          "node": 8
         }
       }
     ],
