@@ -6,8 +6,8 @@
 
   This also allows us to easily introspect our pubchans.
 */
-import type PubChan from './classes/pubchan';
-import createPubChan from './index';
+import type { PubChan } from 'pubchan';
+import createPubChan from 'pubchan';
 
 const PUBCHANS: Map<mixed, PubChan> = new Map();
 
