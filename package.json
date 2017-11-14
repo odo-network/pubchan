@@ -1,6 +1,6 @@
 {
   "name": "pubchan",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Simple yet powerful pub/sub channels",
   "main": "lib/index.js",
   "author": "Braden R. Napier",

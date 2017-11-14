@@ -96,20 +96,10 @@ import type { Subscriber } from 'pubchan'
 
 ## `PubChan`
 
-Below is a normalized version of the `PubChan` class which should provide the structure of the instance returned by our `createPubChan` factory.
+Below is a normalized version of the `PubChan` class's public interface which should provide the structure of the instance returned by our `createPubChan` factory.
 
 ```js
 declare class PubChan {
-  pipeline: {
-    emit: Set<mixed>,
-    matches: Set<Subscriber>,
-    with: Array<mixed>,
-  },
-
-  +listeners: Map<mixed, Set<Subscriber>>,
-
-  +subscribers: Set<Subscriber>,
-
   // how many total active subscribers do we have?
   get length(): number,
   get size(): number,
@@ -118,6 +108,9 @@ declare class PubChan {
 
   // include args with the event emission
   with: (...args: Array<any>) => this,
+
+  // include state with the event for chained emissions
+  state = (...args: Array<?{ [key: string]: any }>) => this,
 
   // send the event and optionally include args to the handlers.
   send: (...args: Array<any>) => Promise<null> | Promise<Array<any>>,
