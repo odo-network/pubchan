@@ -22,9 +22,9 @@ function handleChanCreate(id: mixed, chan: PubChan) {
     });
 }
 
-function getPubChan(id: mixed) {
+function getPubChan(id: mixed, ifexists: boolean = false) {
   let chan = PUBCHANS.get(id);
-  if (!chan) {
+  if (!chan && !ifexists) {
     chan = createPubChan();
     handleChanCreate(id, chan);
   }
@@ -35,6 +35,27 @@ function hasPubChan(id: mixed) {
   return PUBCHANS.has(id);
 }
 
-export default getPubChan;
+function pubChanKeys() {
+  return [...PUBCHANS.keys()];
+}
 
-export { getPubChan, hasPubChan };
+function pubChanValues() {
+  return [...PUBCHANS.entries()];
+}
+
+function pubChanEntries() {
+  return [...PUBCHANS.entries()];
+}
+
+const PubChanRegistry = Object.freeze({
+  keys: pubChanKeys,
+  get: getPubChan,
+  create: getPubChan,
+  has: hasPubChan,
+  values: pubChanValues,
+  entries: pubChanEntries,
+});
+
+export default PubChanRegistry;
+
+export { getPubChan, hasPubChan, pubChanKeys, pubChanValues, pubChanEntries };

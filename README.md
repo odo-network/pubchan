@@ -102,11 +102,30 @@ import type { Subscriber } from 'pubchan'
 
 ### Registry Exports
 
-#### `getPubChan` (Function) (default)
+#### `PubChanRegistry` (Frozen Object) (default)
+
+An object which encapsulates the standard exports listed below.
+
+```js
+const PubChanRegistry = Object.freeze({
+  keys: pubChanKeys,
+  get: getPubChan,
+  create: getPubChan,
+  has: hasPubChan,
+  values: pubChanValues,
+  entries: pubChanEntries,
+});
+
+export default PubChanRegistry;
+```
+
+#### `getPubChan` (Function)
 
 Gets a `PubChan` with a given `id` which can be any type that can be a key on a `Map`.  If the `id` already exists then it returns that `PubChan` instead of creating a new one.
 
 `PubChan`'s that are created from the registry automatically subscribe to `$closed` events to clean themselves up when you close the channel from anywhere in the app.
+
+It's second argument optionally accepts a boolean which indicates if a `PubChan` should only be returned if it already exists.  If set to `true` then the function will return `undefined` if the pubchan has not yet been created.
 
 ```js
 import getPubChan from 'pubchan/registry'
@@ -120,6 +139,39 @@ Check if a given PubChan exists within the registry.
 ```js
 import { hasPubChan } from 'pubchan/registry'
 if (hasPubChan('mychan')) {
+  // ...
+}
+```
+
+#### `pubChanKeys` (Function)
+
+Returns an array with all entries within the registry.  Takes the form of `[id, id, ...]` inline with a call to a `Map`'s `.keys()` call cast to an `Array`.
+
+```js
+import { pubChanKeys } from 'pubchan/registry';
+for (const id of pubChanKeys()) {
+  // ...
+}
+```
+
+#### `pubChanValues` (Function)
+
+Returns an array with all entries within the registry.  Takes the form of `[chan, chan, ...]` inline with a call to a `Map`'s `.values()` call cast to an `Array`.
+
+```js
+import { pubChanValues } from 'pubchan/registry';
+for (const chan of pubChanValues()) {
+  // ...
+}
+```
+
+#### `pubChanEntries` (Function)
+
+Returns an array with all entries within the registry.  Takes the form of `[[key, value], ...]` inline with a call to a `Map`'s `.entries()` call cast to an `Array`.
+
+```js
+import { pubChanEntries } from 'pubchan/registry';
+for (const [id, chan] of pubChanEntries()) {
   // ...
 }
 ```
