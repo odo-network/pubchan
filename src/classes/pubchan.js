@@ -50,6 +50,7 @@ class PubChan {
   pipeline: PubChan$Pipeline;
   +listeners: PubChan$Listeners = new Map();
   +subscribers: PubChan$SubscriberSet = new Set();
+  closed: boolean = false;
 
   get length(): number {
     return this.listeners.size;
@@ -60,6 +61,9 @@ class PubChan {
   }
 
   emit = (...ids: Array<PubChan$EmitIDs>) => {
+    if (this.closed) {
+      throw new Error('[pubchan]: Tried to emit to a closed pubchan');
+    }
     const emit = new Set();
     const matches = new Set();
     this.pipeline = {
@@ -103,6 +107,9 @@ class PubChan {
   };
 
   send = async (...args: Array<any>): Promise<PubChan$EmitResponseRef> => {
+    if (this.closed) {
+      throw new Error('[pubchan]: Tried to send to a closed pubchan');
+    }
     // FIXME: Dont use delete once flow can handle it
     const pipeline: PubChan$ResolvedPipeline = {
       emit: this.pipeline.emit,
@@ -147,6 +154,9 @@ class PubChan {
   };
 
   subscribe = (options?: $Shape<PubChan$Options> = {}) => {
+    if (this.closed) {
+      throw new Error('[pubchan]: Tried to subscribe to a closed pubchan');
+    }
     const subscriber = new Subscriber(this, options);
     this.subscribers.add(subscriber);
     return subscriber;
@@ -162,6 +172,7 @@ class PubChan {
         .with(args)
         .send();
     }
+    this.closed = true;
     this.subscribers.forEach(subscriber => subscriber.cancel());
     return result;
   };
