@@ -63,6 +63,8 @@ chan
 
 For more examples you can check out the [examples directory](https://github.com/Dash-OS/pubchan/tree/master/examples)
 
+---
+
 ## API Reference
 
 > **Note:** This is currently a work in progress.  The API is quite simple and can be understood by looking at our [types](https://github.com/Dash-OS/pubchan/tree/master/src/types) files as this packages has 100% flowtype coverage.
@@ -95,6 +97,34 @@ This should have no use other than possibly to use for flow-types.  A subscriber
 /* @flow */
 import type { Subscriber } from 'pubchan'
 ```
+
+---
+
+### Registry Exports
+
+#### `getPubChan` (Function) (default)
+
+Gets a `PubChan` with a given `id` which can be any type that can be a key on a `Map`.  If the `id` already exists then it returns that `PubChan` instead of creating a new one.
+
+`PubChan`'s that are created from the registry automatically subscribe to `$closed` events to clean themselves up when you close the channel from anywhere in the app.
+
+```js
+import getPubChan from 'pubchan/registry'
+const chan = getPubChan('mychan');
+```
+
+#### `hasPubChan` (Function)
+
+Check if a given PubChan exists within the registry.
+
+```js
+import { hasPubChan } from 'pubchan/registry'
+if (hasPubChan('mychan')) {
+  // ...
+}
+```
+
+---
 
 ## `PubChan`
 
