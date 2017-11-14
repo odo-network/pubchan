@@ -34,15 +34,17 @@ import createPubChan from 'pubchan';
 
 const chan = createPubChan();
 
+// trigger asynchronously whenever foo is received
 chan
   .subscribe({ async: true })
   .to('foo')
   .do(() => console.log('foo 1!'));
 
+// trigger once synchronously then cancel
 chan
   .subscribe()
   .to('foo')
-  .do(() => console.log('foo 2!'));
+  .once(() => console.log('foo 2!'));
 
 chan
   .emit('foo')
