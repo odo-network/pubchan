@@ -3,4 +3,4 @@ lib
 scripts
 private
 .DS_Store
-registry
+./registry/
