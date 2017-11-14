@@ -108,10 +108,10 @@ An object which encapsulates the standard exports listed below.
 
 ```js
 const PubChanRegistry = Object.freeze({
-  keys: pubChanKeys,
-  get: getPubChan,
-  create: getPubChan,
   has: hasPubChan,
+  get: getPubChan,
+  keys: pubChanKeys,
+  create: getPubChan,
   values: pubChanValues,
   entries: pubChanEntries,
 });

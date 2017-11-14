@@ -48,10 +48,10 @@ function pubChanEntries() {
 }
 
 const PubChanRegistry = Object.freeze({
-  keys: pubChanKeys,
-  get: getPubChan,
-  create: getPubChan,
   has: hasPubChan,
+  get: getPubChan,
+  keys: pubChanKeys,
+  create: getPubChan,
   values: pubChanValues,
   entries: pubChanEntries,
 });
