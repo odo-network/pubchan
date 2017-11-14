@@ -19,19 +19,36 @@ type Callback = (
   ref: PubChan$Ref,
   ids: Set<PubChan$EmitID>,
   ...args: Array<mixed>
-) => Array<mixed> | mixed;
+) => void | (Array<any> | any);
 
 export type PubChan$Callback = Array<Callback> | Callback;
 
 export interface PubChan$Ref {
   +once?: void | boolean,
   +id?: PubChan$EmitID,
-  +state: { [key: string]: * },
   +subscription: Subscriber,
   +chan: PubChan,
   +callback: PubChan$Callback,
   +cancel: () => void,
+  _state?: { [key: string]: * },
+  state: $Shape<{ [key: string]: * }>,
 }
+
+export type PubChan$StateShape = {
+  // $call?: void,
+  [key: string]: mixed,
+};
+
+export type PubChan$StateResolver = (
+  state: PubChan$StateShape,
+) => void | PubChan$StateShape;
+
+export type PubChan$State = PubChan$StateShape | PubChan$StateResolver;
+
+export type PubChan$EmitResponseRef = {
+  results: null | Array<mixed> | mixed,
+  state?: PubChan$StateShape,
+};
 
 export type PubChan$Listeners = Map<PubChan$EmitID, PubChan$SubscriberSet>;
 
@@ -41,6 +58,19 @@ export type PubChan$Pipeline = {
   emit: PubChan$IDSet,
   matches: PubChan$Matches,
   with: Array<mixed>,
+  state?: Array<PubChan$State>,
 };
 
-export type PubChan$CompleteCallback = (ref: PubChan$Ref) => mixed;
+export type PubChan$ResolvedPipeline = {|
+  ...$Rest<$Exact<PubChan$Pipeline>, {| state?: Array<PubChan$State> |}>,
+  state: void | PubChan$StateShape,
+|};
+
+// {
+//   emit: PubChan$IDSet,
+//   matches: PubChan$Matches,
+//   with: Array<mixed>,
+//   state?: Array<PubChan$State>,
+// };
+
+export type PubChan$CompleteCallback = (ref: PubChan$Ref) => ?mixed;

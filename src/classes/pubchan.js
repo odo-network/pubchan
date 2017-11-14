@@ -6,6 +6,9 @@ import type {
   PubChan$Pipeline,
   PubChan$Listeners,
   PubChan$SubscriberSet,
+  PubChan$EmitResponseRef,
+  PubChan$State,
+  PubChan$ResolvedPipeline,
 } from '../types';
 
 import Subscriber from './subscriber';
@@ -27,16 +30,26 @@ function findMatchingListeners(PubChan, matches, events, emit) {
   return matches;
 }
 
+function resolvePipelineState(state: Array<PubChan$State> = []) {
+  return state.reduce((p, c) => {
+    if (!c) return p;
+    if (typeof c === 'function') {
+      return {
+        ...p,
+        ...(c(p) || {}),
+      };
+    }
+    return {
+      ...p,
+      ...(c || {}),
+    };
+  }, {});
+}
+
 class PubChan {
   pipeline: PubChan$Pipeline;
   +listeners: PubChan$Listeners = new Map();
   +subscribers: PubChan$SubscriberSet = new Set();
-
-  subscribe = (options?: $Shape<PubChan$Options> = {}) => {
-    const subscriber = new Subscriber(this, options);
-    this.subscribers.add(subscriber);
-    return subscriber;
-  };
 
   get length(): number {
     return this.listeners.size;
@@ -46,52 +59,97 @@ class PubChan {
     return this.listeners.size;
   }
 
-  emit = (...args: Array<PubChan$EmitIDs>) => {
-    if (this.size === 0) {
-      return this;
-    }
+  emit = (...ids: Array<PubChan$EmitIDs>) => {
     const emit = new Set();
     const matches = new Set();
-    const matchall = this.listeners.get(MATCH_ALL_KEY);
-    if (matchall) {
-      matchall.forEach(match => matches.add(match));
-    }
     this.pipeline = {
       emit,
       with: [],
-      matches: args.reduce(
-        (p, c) => findMatchingListeners(this, p, c, emit),
-        matches,
-      ),
+      matches,
     };
+    if (this.size > 0) {
+      const matchall = this.listeners.get(MATCH_ALL_KEY);
+      if (matchall) {
+        matchall.forEach(match => matches.add(match));
+      }
+      ids.forEach(emitID => findMatchingListeners(this, matches, emitID, emit));
+    }
     return this;
   };
 
   with = (...args: Array<any>) => {
-    if (this.pipeline && args.length > 0) {
+    if (this.pipeline && this.pipeline.matches.size > 0 && args.length > 0) {
       this.pipeline.with = [...this.pipeline.with, ...args];
     }
     return this;
   };
 
-  send = async (...args: Array<any>) => {
-    if (this.pipeline) {
-      if (args.length > 0) {
-        this.with(...args);
-      }
-      const promises = [];
-      if (this.pipeline.matches.size > 0) {
-        this.pipeline.matches.forEach(match => {
-          const result = match.trigger(this.pipeline);
-          promises.push(result);
-        });
-      }
-      // FIXME: Using delete operator as others currently are breaking
-      //        flow-type soundness.
-      delete this.pipeline;
-      return Promise.all(promises.reduce((p, c) => p.concat(c), []));
+  state = (...args: Array<?PubChan$State>) => {
+    if (this.pipeline && args.length > 0) {
+      // FIXME: Flow cant handle Object.assign(...args)
+      // this.pipeline.state = args.reduce(
+      //   (p, c) => ({
+      //     ...p,
+      //     ...(c || {}),
+      //   }),
+      //   this.pipeline.state || {},
+      // );
+      this.pipeline.state = args.reduce(
+        (p, c) => p.concat(c || []),
+        this.pipeline.state || [],
+      );
     }
-    return null;
+    return this;
+  };
+
+  send = async (...args: Array<any>): Promise<PubChan$EmitResponseRef> => {
+    // FIXME: Dont use delete once flow can handle it
+    const pipeline: PubChan$ResolvedPipeline = {
+      emit: this.pipeline.emit,
+      with: this.pipeline.with,
+      matches: this.pipeline.matches,
+      state: this.pipeline.state && resolvePipelineState(this.pipeline.state),
+    };
+    delete this.pipeline;
+
+    // console.log('S ', pipeline.state);
+    if (pipeline) {
+      if (pipeline.matches.size > 0) {
+        if (args.length > 0) {
+          this.with(...args);
+        }
+        const promises: Array<Array<void | Array<mixed> | mixed>> = [];
+
+        if (pipeline.matches.size > 0) {
+          pipeline.matches.forEach(match => {
+            promises.push(match.trigger(pipeline));
+          });
+        }
+        const promise = Promise.all(promises.reduce((p, c) => p.concat(c), []));
+        if (pipeline.state) {
+          return promise.then(results => ({
+            results,
+            state: pipeline.state,
+          }));
+        }
+        return promise.then(results => ({ results }));
+      }
+
+      if (pipeline.state) {
+        return {
+          results: null,
+          state: pipeline.state,
+        };
+      }
+    }
+
+    return { results: null };
+  };
+
+  subscribe = (options?: $Shape<PubChan$Options> = {}) => {
+    const subscriber = new Subscriber(this, options);
+    this.subscribers.add(subscriber);
+    return subscriber;
   };
 
   close = async (...args: Array<any>) => {

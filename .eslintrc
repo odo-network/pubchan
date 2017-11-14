@@ -15,8 +15,11 @@
     "class-methods-use-this": "off",
     "function-paren-newline": ["error", "consistent"],
     "no-unused-expressions": "off",
+    "no-param-reassign": "off",
     "flowtype/generic-spacing": "off",
+    "no-underscore-dangle": "off",
     "no-use-before-define": "off",
+    "consistent-return": "off",
     "no-console": "off",
     "flowtype/no-unused-expressions": "error",
     "max-len": ["error", { "code": 80, "ignoreComments": true, "ignoreStrings": true, "ignoreTemplateLiterals": true }]

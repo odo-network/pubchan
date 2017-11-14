@@ -5,11 +5,13 @@ import type {
   PubChan$Ref,
   PubChan$Callback,
   PubChan$SubscriberSet,
-  PubChan$Pipeline,
+  // PubChan$Pipeline,
   PubChan$EmitID,
   PubChan$Options,
   PubChan$CompleteCallback,
   PubChan$IDSet,
+  PubChan$ResolvedPipeline,
+  // PubChan$StateShape,
 } from '../types';
 
 import type { $StrictObject } from '../types/utils';
@@ -59,7 +61,7 @@ function handleAsyncCallback(
   ref: PubChan$Ref,
   ids: PubChan$IDSet,
   args: Array<*>,
-): Promise<*> {
+): Promise<void | Array<void | mixed> | mixed> {
   return new Promise(resolve => {
     if (typeof process.nextTick === 'function') {
       process.nextTick(() => resolve(executeCallback(ref, ids, args)));
@@ -73,12 +75,69 @@ function executeCallback(
   ref: PubChan$Ref,
   ids: PubChan$IDSet,
   args: Array<any>,
-) {
+): void | Array<void | mixed> | mixed {
   if (Array.isArray(ref.callback)) {
     const results = ref.callback.map(cb => cb(ref, ids, ...args));
     return results;
   }
   return ref.callback(ref, ids, ...args);
+}
+
+function proxiedState(pipeline: PubChan$ResolvedPipeline, ref: PubChan$Ref) {
+  // console.log('Proxy State!');
+  return new Proxy(
+    {},
+    {
+      has(t, prop) {
+        if (pipeline.state && prop in pipeline.state) {
+          return true;
+        }
+        return Reflect.has(ref._state, prop);
+      },
+      get(t, prop) {
+        if (pipeline.state && Reflect.has(pipeline.state, prop)) {
+          return pipeline.state[prop];
+        } else if (ref._state) {
+          return ref._state[prop];
+        }
+      },
+      set(t, prop, value: mixed) {
+        return Reflect.set(ref._state, prop, value, ref._state);
+        // return true;
+      },
+      deleteProperty(t, prop) {
+        if (ref._state && prop in ref._state) {
+          delete ref._state[prop];
+          return true;
+        }
+        return false;
+      },
+      ownKeys() {
+        return [
+          ...new Set(
+            [].concat(
+              Reflect.ownKeys(ref._state),
+              Reflect.ownKeys(pipeline.state),
+            ),
+          ),
+        ];
+      },
+      defineProperty(t, prop, descriptor) {
+        return Reflect.defineProperty(ref._state, prop, descriptor);
+      },
+      getOwnPropertyDescriptor(t, prop) {
+        if (
+          (pipeline.state && pipeline.state[prop]) ||
+          (ref._state && ref._state[prop])
+        ) {
+          return {
+            enumerable: true,
+            configurable: true,
+          };
+        }
+      },
+    },
+  );
 }
 
 class Subscriber {
@@ -87,7 +146,6 @@ class Subscriber {
   // hold refs to the sets which we are subscribed to for
   // easy access and unsubscribe.
   +pathrefs: Map<PubChan$EmitID, PubChan$SubscriberSet> = new Map();
-
   +options: $StrictObject<PubChan$Options>;
 
   constructor(pubchan: PubChan, options: $Shape<PubChan$Options>): Subscriber {
@@ -121,7 +179,7 @@ class Subscriber {
     callback: PubChan$Callback,
     onComplete?: PubChan$CompleteCallback,
   ) => {
-    const ref = {
+    const ref: PubChan$Ref = {
       subscription: this,
       chan: this.pubchan,
       once: true,
@@ -132,12 +190,13 @@ class Subscriber {
     addCallbackToSubscriber(this, ref);
     if (onComplete && typeof onComplete === 'function') {
       onComplete(ref);
+      ref._state = ref.state;
     }
     return this;
   };
 
   do = (callback: PubChan$Callback, onComplete?: PubChan$CompleteCallback) => {
-    const ref = {
+    const ref: PubChan$Ref = {
       subscription: this,
       chan: this.pubchan,
       state: {},
@@ -147,25 +206,36 @@ class Subscriber {
     addCallbackToSubscriber(this, ref);
     if (onComplete && typeof onComplete === 'function') {
       onComplete(ref);
+      ref._state = ref.state;
     }
     return this;
   };
 
   cancel = () => removeSubscriber(this);
 
-  trigger = (pipeline: PubChan$Pipeline) => {
+  trigger = (
+    pipeline: PubChan$ResolvedPipeline,
+  ): Array<void | Array<mixed> | mixed> => {
     const results = [];
     this.callbacks.forEach(ref => {
       let result;
       if (ref.once) {
         ref.cancel();
       }
+
+      if (pipeline.state) {
+        ref.state = proxiedState(pipeline, ref);
+      } else if (ref._state) {
+        ref.state = ref._state;
+      }
+
       // const args = [ref, pipeline.emit, ...pipeline.with];
       if (!this.options.async) {
         result = executeCallback(ref, pipeline.emit, pipeline.with);
       } else {
         result = handleAsyncCallback(ref, pipeline.emit, pipeline.with);
       }
+
       results.push(result);
     });
     return results;

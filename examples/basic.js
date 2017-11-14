@@ -35,7 +35,7 @@ const subscription = chan
   })
   .to('foo', 'bar', fn)
   .do((ref, ids, ...args) => {
-    console.log('First Callback! ');
+    console.log('First Callback! ', args);
     if (ids.has('kill')) {
       // cancel the entire subscription
       ref.subscription.cancel();
@@ -69,10 +69,7 @@ chan
     console.log('Second bar emit complete ', results);
     // ['*', undefined]
     // send 'foo' and 'kill' events with args 'one' and 'two'
-    return chan
-      .emit('foo', 'kill')
-      .with('one', 'two')
-      .send();
+    return chan.emit('foo', 'kill').send('one', 'two');
   })
   .then(results => {
     console.log('Subscription Killed!', results);
