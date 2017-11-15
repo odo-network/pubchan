@@ -5,6 +5,9 @@ Simple yet powerful pub/sub channels for Javascript and Node.js.
 Tiny, fast, and reliable pubsub event emitter with promises, optional result
 aggregation (state), and async/sync controls.
 
+Used in production to coordinate & route millions of events within our
+proprietary Datastream Realtime Event Protocol.
+
 ## Install
 
 ```
@@ -26,6 +29,18 @@ We strongly recommend you look over the
 [types](https://github.com/Dash-OS/pubchan/tree/master/src/pubchan/types)
 folder. This will give you an idea of how the various pieces of the package
 work.
+
+## Tests
+
+This library was taken out of our broad library used for our internal DRE
+Protocol. While it has 100% Test Coverage there, we have not yet built
+standalone tests for this library.
+
+We plan to add coverage for it when time permits. In the meantime, it does
+maintain it's 100% type coverage.
+
+> Pull requests are more than welcome if you happen to have the time to
+> contribute!
 
 ## Example
 
@@ -222,7 +237,9 @@ import type {
 } from 'pubchan/lib/types';
 ```
 
-There are some useful utility types also available at `pubchan/lib/types/utils`
+There are some useful [utility types](https://flow.org/en/docs/types/utilities/)
+also available at
+[`pubchan/lib/types/utils`](https://github.com/Dash-OS/pubchan/tree/master/src/pubchan/types/utils)
 
 ---
 
