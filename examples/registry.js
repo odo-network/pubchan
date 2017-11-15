@@ -1,9 +1,9 @@
 /* @flow */
-import createPubChan, { hasPubChan } from '../src/registry';
+import registry, { hasPubChan } from '../src/registry';
 
 // anywhere in app, get the channel by an id.  if it doesnt exist it
 // will be created and returned.
-const chan = createPubChan('mychan');
+const chan = registry.get('mychan');
 
 console.log('Has Pub Chan? ', hasPubChan('mychan'));
 

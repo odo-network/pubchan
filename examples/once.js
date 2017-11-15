@@ -1,5 +1,5 @@
 /* @flow */
-import createPubChan from '../src';
+import createPubChan from '../src/pubchan';
 
 const chan = createPubChan();
 
