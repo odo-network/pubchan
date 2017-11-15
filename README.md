@@ -225,7 +225,7 @@ There are some useful utility types also available at `pubchan/lib/types/utils`
 
 ---
 
-## `PubChan`
+### `PubChan`
 
 Below is a normalized version of the `PubChan` class's public interface which
 should provide the structure of the instance returned by our `createPubChan`
@@ -258,7 +258,7 @@ declare class PubChan {
 }
 ```
 
-## `Subscriber`
+### `Subscriber`
 
 `Subscriber` instances are returned by a call to `.subscribe()` on our `PubChan`
 instance.
