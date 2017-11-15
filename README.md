@@ -96,6 +96,10 @@ For more examples you can check out the
 
 #### `createPubChan` (Function) (default)
 
+```js
+declare function createPubChan(): PubChan;
+```
+
 Our default export, creates an instance of `PubChan`.
 
 ```js
@@ -150,6 +154,12 @@ export default PubChanRegistry;
 
 #### `getPubChan` (Function)
 
+```js
+declare export function getPubChan(id: mixed): PubChan
+declare export function getPubChan(id: ifexists: false): PubChan
+declare export function getPubChan(id: mixed, ifexists: true): void | PubChan
+```
+
 Gets a `PubChan` with a given `id` which can be any type that can be a key on a
 `Map`. If the `id` already exists then it returns that `PubChan` instead of
 creating a new one.
@@ -180,6 +190,10 @@ if (hasPubChan('mychan')) {
 
 #### `pubChanKeys` (Function)
 
+```js
+declare export function pubChanKeys(): Array<mixed>;
+```
+
 Returns an array with all entries within the registry. Takes the form of `[id,
 id, ...]` inline with a call to a `Map`'s `.keys()` call cast to an `Array`.
 
@@ -192,6 +206,10 @@ for (const id of pubChanKeys()) {
 
 #### `pubChanValues` (Function)
 
+```js
+declare export function pubChanValues(): Array<PubChan>;
+```
+
 Returns an array with all entries within the registry. Takes the form of `[chan,
 chan, ...]` inline with a call to a `Map`'s `.values()` call cast to an `Array`.
 
@@ -203,6 +221,10 @@ for (const chan of pubChanValues()) {
 ```
 
 #### `pubChanEntries` (Function)
+
+```js
+declare export function pubChanEntries(): Array<[mixed, PubChan]>;
+```
 
 Returns an array with all entries within the registry. Takes the form of `[[key,
 value], ...]` inline with a call to a `Map`'s `.entries()` call cast to an
