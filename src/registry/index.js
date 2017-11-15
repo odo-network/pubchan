@@ -31,7 +31,7 @@ function handleChanCreate(id: mixed, chan: PubChan) {
 
 /*
   Flow is not capable of properly refining the type based on an
-  optinal parameter so this "hack" allows it to do so.  We need
+  argument parameter so this "hack" allows it to do so.  We need
   to Ignore the errors as the types are correct.
 */
 
