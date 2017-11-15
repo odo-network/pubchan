@@ -201,11 +201,12 @@ declare export function getPubChan(id: mixed, ifexists: true): void | PubChan
 
 #### `hasPubChan` (Function)
 
-Check if a given PubChan exists within the registry.
+Check if the given PubChan(s) exists within the registry. Returns `true` if
+every `id` given is found.
 
 ```js
 import { hasPubChan } from 'pubchan/registry';
-if (hasPubChan('mychan')) {
+if (hasPubChan('mychan', 'anotherchan')) {
   // ...
 }
 ```
@@ -213,7 +214,7 @@ if (hasPubChan('mychan')) {
 ##### Type Signature
 
 ```js
-declare export function hasPubChan(id: mixed): boolean;
+declare export function hasPubChan(...ids: Array<mixed>): boolean;
 ```
 
 ---

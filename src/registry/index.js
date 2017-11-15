@@ -10,10 +10,10 @@ import type { PubChan } from 'pubchan';
 import createPubChanInstance from 'pubchan';
 
 interface getChan {
-  (id: mixed, ...args: Array<void>): PubChan,
-  (id: mixed, ifexists?: false): PubChan,
-  (id: mixed, ifexists: void | false): PubChan,
-  (id: mixed, ifexists: true): void | PubChan,
+  (id: mixed, ...args: Array<void>): PubChan;
+  (id: mixed, ifexists?: false): PubChan;
+  (id: mixed, ifexists: void | false): PubChan;
+  (id: mixed, ifexists: true): void | PubChan;
 }
 
 const PUBCHANS: Map<mixed, PubChan> = new Map();
@@ -65,8 +65,8 @@ function createPubChan(id: mixed): PubChan {
 // it in the future as this will be the syntax expected.
 //
 // in the meantime, it should not cause any errors or problems.
-function hasPubChan(id: mixed): boolean %checks {
-  return PUBCHANS.get(id) !== undefined;
+function hasPubChan(...ids: Array<mixed>): boolean %checks {
+  return ids.every(id => PUBCHANS.get(id) !== undefined);
 }
 
 function pubChanKeys() {
