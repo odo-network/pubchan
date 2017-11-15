@@ -96,9 +96,7 @@ For more examples you can check out the
 
 #### `createPubChan` (Function) (default)
 
-```js
-declare function createPubChan(): PubChan;
-```
+##### Overview
 
 Our default export, creates an instance of `PubChan`.
 
@@ -107,7 +105,17 @@ import createPubChan from 'pubchan';
 const chan = createPubChan();
 ```
 
+##### Type Signature
+
+```js
+declare function createPubChan(): PubChan;
+```
+
+---
+
 #### `PubChan` (Class)
+
+##### Overview
 
 Generally using the `createPubChan` function is the recommended method of
 creating a new channel. However, you can also import the class directly if
@@ -118,7 +126,11 @@ import { PubChan } from 'pubchan';
 const chan = new PubChan();
 ```
 
+---
+
 #### `Subscriber` (Class)
+
+##### Overview
 
 This should have no use other than possibly to use for flow-types. A subscriber
 is useless unless created by an interface which matches the `PubChan`.
@@ -137,6 +149,8 @@ for creating and getting channels by a given `id`.
 
 #### `PubChanRegistry` (Frozen Object) (default)
 
+##### Overview
+
 An object which encapsulates the standard exports listed below.
 
 ```js
@@ -152,13 +166,11 @@ const PubChanRegistry = Object.freeze({
 export default PubChanRegistry;
 ```
 
+---
+
 #### `getPubChan` (Function)
 
-```js
-declare export function getPubChan(id: mixed): PubChan
-declare export function getPubChan(id: ifexists: false): PubChan
-declare export function getPubChan(id: mixed, ifexists: true): void | PubChan
-```
+##### Overview
 
 Gets a `PubChan` with a given `id` which can be any type that can be a key on a
 `Map`. If the `id` already exists then it returns that `PubChan` instead of
@@ -188,11 +200,19 @@ if (hasPubChan('mychan')) {
 }
 ```
 
-#### `pubChanKeys` (Function)
+##### Type Signature
 
 ```js
-declare export function pubChanKeys(): Array<mixed>;
+declare export function getPubChan(id: mixed): PubChan
+declare export function getPubChan(id: ifexists: false): PubChan
+declare export function getPubChan(id: mixed, ifexists: true): void | PubChan
 ```
+
+---
+
+#### `pubChanKeys` (Function)
+
+##### Overview
 
 Returns an array with all entries within the registry. Takes the form of `[id,
 id, ...]` inline with a call to a `Map`'s `.keys()` call cast to an `Array`.
@@ -204,11 +224,17 @@ for (const id of pubChanKeys()) {
 }
 ```
 
-#### `pubChanValues` (Function)
+##### Type Signature
 
 ```js
-declare export function pubChanValues(): Array<PubChan>;
+declare export function pubChanKeys(): Array<mixed>;
 ```
+
+---
+
+#### `pubChanValues` (Function)
+
+##### Overview
 
 Returns an array with all entries within the registry. Takes the form of `[chan,
 chan, ...]` inline with a call to a `Map`'s `.values()` call cast to an `Array`.
@@ -220,11 +246,17 @@ for (const chan of pubChanValues()) {
 }
 ```
 
-#### `pubChanEntries` (Function)
+##### Type Signature
 
 ```js
-declare export function pubChanEntries(): Array<[mixed, PubChan]>;
+declare export function pubChanValues(): Array<PubChan>;
 ```
+
+---
+
+#### `pubChanEntries` (Function)
+
+##### Overview
 
 Returns an array with all entries within the registry. Takes the form of `[[key,
 value], ...]` inline with a call to a `Map`'s `.entries()` call cast to an
@@ -235,6 +267,12 @@ import { pubChanEntries } from 'pubchan/registry';
 for (const [id, chan] of pubChanEntries()) {
   // ...
 }
+```
+
+##### Type Signature
+
+```js
+declare export function pubChanEntries(): Array<[mixed, PubChan]>;
 ```
 
 ---
@@ -267,9 +305,13 @@ also available at
 
 ### `PubChan`
 
+##### Overview
+
 Below is a normalized version of the `PubChan` class's public interface which
 should provide the structure of the instance returned by our `createPubChan`
 factory.
+
+##### Type Signature
 
 ```js
 declare class PubChan {
