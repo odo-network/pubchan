@@ -48,9 +48,9 @@ function resolvePipelineState(state: Array<PubChan$State> = []) {
 
 class PubChan {
   pipeline: PubChan$Pipeline;
+  closed: boolean = false;
   +listeners: PubChan$Listeners = new Map();
   +subscribers: PubChan$SubscriberSet = new Set();
-  closed: boolean = false;
 
   get length(): number {
     return this.listeners.size;
@@ -90,14 +90,6 @@ class PubChan {
 
   state = (...args: Array<?PubChan$State>) => {
     if (this.pipeline && args.length > 0) {
-      // FIXME: Flow cant handle Object.assign(...args)
-      // this.pipeline.state = args.reduce(
-      //   (p, c) => ({
-      //     ...p,
-      //     ...(c || {}),
-      //   }),
-      //   this.pipeline.state || {},
-      // );
       this.pipeline.state = args.reduce(
         (p, c) => p.concat(c || []),
         this.pipeline.state || [],
@@ -110,16 +102,17 @@ class PubChan {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to send to a closed pubchan');
     }
-    // FIXME: Dont use delete once flow can handle it
+
     const pipeline: PubChan$ResolvedPipeline = {
       emit: this.pipeline.emit,
       with: this.pipeline.with,
       matches: this.pipeline.matches,
       state: this.pipeline.state && resolvePipelineState(this.pipeline.state),
     };
+
+    // FIXME: Dont use delete once flow can handle it
     delete this.pipeline;
 
-    // console.log('S ', pipeline.state);
     if (pipeline) {
       if (pipeline.matches.size > 0) {
         if (args.length > 0) {

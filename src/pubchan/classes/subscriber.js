@@ -83,8 +83,10 @@ function executeCallback(
   return ref.callback(ref, ids, ...args);
 }
 
+// provides a safe object which intermingles the global and local state
+// for the publisher and consumer without the chance of consumer mutating
+// the publishers value(s).
 function proxiedState(pipeline: PubChan$ResolvedPipeline, ref: PubChan$Ref) {
-  // console.log('Proxy State!');
   return new Proxy(
     {},
     {
@@ -103,7 +105,6 @@ function proxiedState(pipeline: PubChan$ResolvedPipeline, ref: PubChan$Ref) {
       },
       set(t, prop, value: mixed) {
         return Reflect.set(ref._state, prop, value, ref._state);
-        // return true;
       },
       deleteProperty(t, prop) {
         if (ref._state && prop in ref._state) {

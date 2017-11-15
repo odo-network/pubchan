@@ -1,8 +1,9 @@
 # pubchan
 
-Simple yet powerful pub/sub channels for Javascript and Node.js.  
+Simple yet powerful pub/sub channels for Javascript and Node.js.
 
-Tiny, fast, and reliable pubsub event emitter with promises, optional result aggregation (state), and async/sync controls.  
+Tiny, fast, and reliable pubsub event emitter with promises, optional result
+aggregation (state), and async/sync controls.
 
 ## Install
 
@@ -21,7 +22,9 @@ npm install --save pubchan
 Proudly built with 100% Flow Coverage and exported .flow.js files so your flow
 projects will benefit!
 
-We strongly recommend you look over the [types](https://github.com/Dash-OS/pubchan/tree/master/src/types) folder.  This will give you an idea of how the various pieces of the package work.  
+We strongly recommend you look over the
+[types](https://github.com/Dash-OS/pubchan/tree/master/src/types) folder. This
+will give you an idea of how the various pieces of the package work.
 
 ## Example
 
@@ -61,13 +64,17 @@ chan
 
 ### More Examples
 
-For more examples you can check out the [examples directory](https://github.com/Dash-OS/pubchan/tree/master/examples)
+For more examples you can check out the
+[examples directory](https://github.com/Dash-OS/pubchan/tree/master/examples)
 
 ---
 
 ## API Reference
 
-> **Note:** This is currently a work in progress.  The API is quite simple and can be understood by looking at our [types](https://github.com/Dash-OS/pubchan/tree/master/src/types) files as this packages has 100% flowtype coverage.
+> **Note:** This is currently a work in progress. The API is quite simple and
+> can be understood by looking at our
+> [types](https://github.com/Dash-OS/pubchan/tree/master/src/types) files as
+> this packages has 100% flowtype coverage.
 
 ### Module Exports
 
@@ -76,33 +83,37 @@ For more examples you can check out the [examples directory](https://github.com/
 Our default export, creates an instance of `PubChan`.
 
 ```js
-import createPubChan from 'pubchan'
-const chan = createPubChan()
+import createPubChan from 'pubchan';
+const chan = createPubChan();
 ```
 
 #### `PubChan` (Class)
 
-Generally using the `createPubChan` function is the recommended method of creating a new channel.  However, you can also import the class directly if needed (can be useful for adding as flow type).
+Generally using the `createPubChan` function is the recommended method of
+creating a new channel. However, you can also import the class directly if
+needed (can be useful for adding as flow type).
 
 ```js
-import { PubChan } from 'pubchan'
-const chan = new PubChan()
+import { PubChan } from 'pubchan';
+const chan = new PubChan();
 ```
 
 #### `Subscriber` (Class)
 
-This should have no use other than possibly to use for flow-types.  A subscriber is useless unless created by an interface which matches the `PubChan`.
+This should have no use other than possibly to use for flow-types. A subscriber
+is useless unless created by an interface which matches the `PubChan`.
 
 ```js
 /* @flow */
-import type { Subscriber } from 'pubchan'
+import type { Subscriber } from 'pubchan';
 ```
 
 ---
 
 ### Registry Exports
 
-Registry is an optional sub-module which wraps `pubchan` and provides a registry for creating and getting channels by a given `id`.
+Registry is an optional sub-module which wraps `pubchan` and provides a registry
+for creating and getting channels by a given `id`.
 
 #### `PubChanRegistry` (Frozen Object) (default)
 
@@ -123,14 +134,20 @@ export default PubChanRegistry;
 
 #### `getPubChan` (Function)
 
-Gets a `PubChan` with a given `id` which can be any type that can be a key on a `Map`.  If the `id` already exists then it returns that `PubChan` instead of creating a new one.
+Gets a `PubChan` with a given `id` which can be any type that can be a key on a
+`Map`. If the `id` already exists then it returns that `PubChan` instead of
+creating a new one.
 
-`PubChan`'s that are created from the registry automatically subscribe to `$closed` events to clean themselves up when you close the channel from anywhere in the app.
+`PubChan`'s that are created from the registry automatically subscribe to
+`$closed` events to clean themselves up when you close the channel from anywhere
+in the app.
 
-It's second argument optionally accepts a boolean which indicates if a `PubChan` should only be returned if it already exists.  If set to `true` then the function will return `undefined` if the pubchan has not yet been created.
+It's second argument optionally accepts a boolean which indicates if a `PubChan`
+should only be returned if it already exists. If set to `true` then the function
+will return `undefined` if the pubchan has not yet been created.
 
 ```js
-import getPubChan from 'pubchan/registry'
+import getPubChan from 'pubchan/registry';
 const chan = getPubChan('mychan');
 ```
 
@@ -139,7 +156,7 @@ const chan = getPubChan('mychan');
 Check if a given PubChan exists within the registry.
 
 ```js
-import { hasPubChan } from 'pubchan/registry'
+import { hasPubChan } from 'pubchan/registry';
 if (hasPubChan('mychan')) {
   // ...
 }
@@ -147,7 +164,8 @@ if (hasPubChan('mychan')) {
 
 #### `pubChanKeys` (Function)
 
-Returns an array with all entries within the registry.  Takes the form of `[id, id, ...]` inline with a call to a `Map`'s `.keys()` call cast to an `Array`.
+Returns an array with all entries within the registry. Takes the form of `[id,
+id, ...]` inline with a call to a `Map`'s `.keys()` call cast to an `Array`.
 
 ```js
 import { pubChanKeys } from 'pubchan/registry';
@@ -158,7 +176,8 @@ for (const id of pubChanKeys()) {
 
 #### `pubChanValues` (Function)
 
-Returns an array with all entries within the registry.  Takes the form of `[chan, chan, ...]` inline with a call to a `Map`'s `.values()` call cast to an `Array`.
+Returns an array with all entries within the registry. Takes the form of `[chan,
+chan, ...]` inline with a call to a `Map`'s `.values()` call cast to an `Array`.
 
 ```js
 import { pubChanValues } from 'pubchan/registry';
@@ -169,7 +188,9 @@ for (const chan of pubChanValues()) {
 
 #### `pubChanEntries` (Function)
 
-Returns an array with all entries within the registry.  Takes the form of `[[key, value], ...]` inline with a call to a `Map`'s `.entries()` call cast to an `Array`.
+Returns an array with all entries within the registry. Takes the form of `[[key,
+value], ...]` inline with a call to a `Map`'s `.entries()` call cast to an
+`Array`.
 
 ```js
 import { pubChanEntries } from 'pubchan/registry';
@@ -180,9 +201,35 @@ for (const [id, chan] of pubChanEntries()) {
 
 ---
 
+### Type Exports
+
+You can import the various
+[flow-types](https://github.com/Dash-OS/pubchan/tree/master/src/types) that
+`pubchan` utilizes if needed while annotating your internal functions.
+
+```js
+import type {
+  PubChan$EmitIDs,
+  PubChan$Options,
+  PubChan$Pipeline,
+  PubChan$Listeners,
+  PubChan$SubscriberSet,
+  PubChan$EmitResponseRef,
+  PubChan$State,
+  PubChan$ResolvedPipeline,
+  PubChan$Ref,
+} from 'pubchan/lib/types';
+```
+
+There are some useful utility types also available at `pubchan/lib/types/utils`
+
+---
+
 ## `PubChan`
 
-Below is a normalized version of the `PubChan` class's public interface which should provide the structure of the instance returned by our `createPubChan` factory.
+Below is a normalized version of the `PubChan` class's public interface which
+should provide the structure of the instance returned by our `createPubChan`
+factory.
 
 ```js
 declare class PubChan {
@@ -213,7 +260,8 @@ declare class PubChan {
 
 ## `Subscriber`
 
-`Subscriber` instances are returned by a call to `.subscribe()` on our `PubChan` instance.  
+`Subscriber` instances are returned by a call to `.subscribe()` on our `PubChan`
+instance.
 
 ```js
 declare type PubChan$EmitID = mixed;
@@ -231,39 +279,39 @@ declare type PubChan$Callback = Array<Callback> | Callback;
 declare type PubChan$CompleteCallback = (ref: PubChan$Ref) => mixed;
 
 declare interface PubChan$Ref {
-  +once?: void | boolean,
-  +id?: PubChan$EmitID,
-  +state: { [key: string]: * },
-  +subscription: Subscriber,
-  +chan: PubChan,
-  +callback: PubChan$Callback,
-  +cancel: () => void,
+  +once?: void | boolean;
+  +id?: PubChan$EmitID;
+  +state: { [key: string]: * };
+  +subscription: Subscriber;
+  +chan: PubChan;
+  +callback: PubChan$Callback;
+  +cancel: () => void;
 }
 
 declare class Subscriber {
   // total number of active callbacks on the subscriber
-  get length(): number,
-  get size(): number,
+  get length(): number;
+  get size(): number;
 
   // all the ids we are subscribed to
-  get keys(): Array<PubChan$EmitID>,
+  get keys(): Array<PubChan$EmitID>;
 
   // subscribe to EmitIDS
-  to: (...args: Array<PubChan$EmitIDs>) => this,
+  to: (...args: Array<PubChan$EmitIDs>) => this;
 
   // add a callback that will happen once then cancel itself
   once: (
     callback: PubChan$Callback,
     onComplete?: PubChan$CompleteCallback,
-  ) => this,
+  ) => this;
 
   // add a callback when this event occurs
   do: (
     callback: PubChan$Callback,
     onComplete?: PubChan$CompleteCallback,
-  ) => this,
+  ) => this;
 
   // cancel the entire subscriber
-  cancel: () => void,
+  cancel: () => void;
 }
 ```
