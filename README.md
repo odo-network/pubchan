@@ -189,6 +189,16 @@ import getPubChan from 'pubchan/registry';
 const chan = getPubChan('mychan');
 ```
 
+##### Type Signature
+
+```js
+declare export function getPubChan(id: mixed): PubChan
+declare export function getPubChan(id: ifexists: false): PubChan
+declare export function getPubChan(id: mixed, ifexists: true): void | PubChan
+```
+
+---
+
 #### `hasPubChan` (Function)
 
 Check if a given PubChan exists within the registry.
@@ -203,9 +213,7 @@ if (hasPubChan('mychan')) {
 ##### Type Signature
 
 ```js
-declare export function getPubChan(id: mixed): PubChan
-declare export function getPubChan(id: ifexists: false): PubChan
-declare export function getPubChan(id: mixed, ifexists: true): void | PubChan
+declare export function hasPubChan(id: mixed): boolean;
 ```
 
 ---
