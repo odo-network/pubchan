@@ -23,8 +23,9 @@ Proudly built with 100% Flow Coverage and exported .flow.js files so your flow
 projects will benefit!
 
 We strongly recommend you look over the
-[types](https://github.com/Dash-OS/pubchan/tree/master/src/types) folder. This
-will give you an idea of how the various pieces of the package work.
+[types](https://github.com/Dash-OS/pubchan/tree/master/src/pubchan/types)
+folder. This will give you an idea of how the various pieces of the package
+work.
 
 ## Example
 
@@ -204,8 +205,8 @@ for (const [id, chan] of pubChanEntries()) {
 ### Type Exports
 
 You can import the various
-[flow-types](https://github.com/Dash-OS/pubchan/tree/master/src/types) that
-`pubchan` utilizes if needed while annotating your internal functions.
+[flow-types](https://github.com/Dash-OS/pubchan/tree/master/src/pubchan/types)
+that `pubchan` utilizes if needed while annotating your internal functions.
 
 ```js
 import type {
