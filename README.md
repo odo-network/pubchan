@@ -102,6 +102,8 @@ import type { Subscriber } from 'pubchan'
 
 ### Registry Exports
 
+Registry is an optional sub-module which wraps `pubchan` and provides a registry for creating and getting channels by a given `id`.
+
 #### `PubChanRegistry` (Frozen Object) (default)
 
 An object which encapsulates the standard exports listed below.
