@@ -15,6 +15,8 @@ export type PubChan$Matches = PubChan$SubscriberSet;
 
 export type PubChan$SubscriberSet = Set<Subscriber>;
 
+export type PubChan$IDSet = Set<PubChan$EmitID>;
+
 type Callback = (
   ref: PubChan$Ref,
   ids: Set<PubChan$EmitID>,
@@ -24,14 +26,14 @@ type Callback = (
 export type PubChan$Callback = Array<Callback> | Callback;
 
 export interface PubChan$Ref {
-  +once?: void | boolean,
-  +id?: PubChan$EmitID,
-  +subscription: Subscriber,
-  +chan: PubChan,
-  +callback: PubChan$Callback,
-  +cancel: () => void,
-  _state?: { [key: string]: * },
-  state: $Shape<{ [key: string]: * }>,
+  +ids?: PubChan$IDSet;
+  +once?: void | boolean;
+  +subscription: Subscriber;
+  +chan: PubChan;
+  +callback: PubChan$Callback;
+  +cancel: () => void;
+  _state?: $Shape<{ [key: string]: * }>;
+  state: $Shape<{ [key: string]: * }>;
 }
 
 export type PubChan$StateShape = {
@@ -52,10 +54,8 @@ export type PubChan$EmitResponseRef = {
 
 export type PubChan$Listeners = Map<PubChan$EmitID, PubChan$SubscriberSet>;
 
-export type PubChan$IDSet = Set<PubChan$EmitID>;
-
 export type PubChan$Pipeline = {
-  emit: PubChan$IDSet,
+  ids: PubChan$IDSet,
   matches: PubChan$Matches,
   with: Array<mixed>,
   state?: Array<PubChan$State>,

@@ -5,82 +5,64 @@ import type {
   PubChan$Ref,
   PubChan$Callback,
   PubChan$SubscriberSet,
-  // PubChan$Pipeline,
   PubChan$EmitID,
   PubChan$Options,
   PubChan$CompleteCallback,
-  PubChan$IDSet,
   PubChan$ResolvedPipeline,
-  // PubChan$StateShape,
 } from '../types';
 
-import type { $StrictObject } from '../types/utils';
+// import type { $StrictObject } from '../types/utils';
 
 import type PubChan from './pubchan';
 
-// import { ACTIVE } from '../context';
+import { asynchronously } from '../utils/async';
+
+// function noop() {}
 
 function addSubscriberToEvent(sub, e) {
-  const set = sub.pubchan.listeners.get(e) || new Set();
+  let set = sub.pubchan.listeners.get(e);
+  if (!set) {
+    set = new Set();
+    sub.pubchan.listeners.set(e, set);
+  }
   set.add(sub);
   sub.pathrefs.set(e, set);
-  sub.pubchan.listeners.set(e, set);
 }
 
 function removeSubscriber(sub) {
-  // console.log('Removing Subscriber! ');
-  // ACTIVE.delete(sub);
-  sub.pathrefs.forEach((set, e) => {
+  return sub.pathrefs.forEach((set, e) => {
     set.delete(sub);
     sub.pathrefs.delete(e);
-    if (set.size === 0) {
-      // cleanup the PubChan map when no other listeners on this event exist
+    if (!set.size) {
+      // cleanup the PubChan map when no other
+      // listeners on this event exist
       sub.pubchan.listeners.delete(e);
     }
   });
 }
 
-const getSubscriberOptions = (
-  options: $Shape<PubChan$Options>,
-): $StrictObject<PubChan$Options> => ({
-  async: typeof options.async === 'boolean' ? options.async : false,
-});
-
-function addCallbackToSubscriber(sub: Subscriber, ref: PubChan$Ref) {
-  sub.callbacks.add(ref);
-}
+// const getSubscriberOptions = (
+//   options: $Shape<PubChan$Options>,
+// ): $StrictObject<PubChan$Options> => ({
+//   async: typeof options.async === 'boolean' ? options.async : false,
+// });
 
 function handleRefCancellation(sub: Subscriber, ref: PubChan$Ref) {
   sub.callbacks.delete(ref);
-  if (sub.callbacks.size === 0) {
+  if (!sub.callbacks.size) {
     removeSubscriber(sub);
   }
 }
 
-function handleAsyncCallback(
-  ref: PubChan$Ref,
-  ids: PubChan$IDSet,
-  args: Array<*>,
-): Promise<void | Array<void | mixed> | mixed> {
-  return new Promise(resolve => {
-    if (typeof process.nextTick === 'function') {
-      process.nextTick(() => resolve(executeCallback(ref, ids, args)));
-    } else {
-      setImmediate(() => resolve(executeCallback(ref, ids, args)));
-    }
-  });
-}
-
 function executeCallback(
-  ref: PubChan$Ref,
-  ids: PubChan$IDSet,
-  args: Array<any>,
+  args?: [PubChan$Ref, PubChan$ResolvedPipeline],
 ): void | Array<void | mixed> | mixed {
+  if (!args) return;
+  const [ref, pipeline] = args;
   if (Array.isArray(ref.callback)) {
-    const results = ref.callback.map(cb => cb(ref, ids, ...args));
-    return results;
+    return ref.callback.map(cb => cb(ref, pipeline.ids, ...pipeline.with));
   }
-  return ref.callback(ref, ids, ...args);
+  return ref.callback(ref, pipeline.ids, ...pipeline.with);
 }
 
 // provides a safe object which intermingles the global and local state
@@ -143,15 +125,26 @@ function proxiedState(pipeline: PubChan$ResolvedPipeline, ref: PubChan$Ref) {
 
 class Subscriber {
   +pubchan: PubChan;
-  +callbacks: Set<PubChan$Ref> = new Set();
+  +callbacks: Set<PubChan$Ref>;
   // hold refs to the sets which we are subscribed to for
   // easy access and unsubscribe.
-  +pathrefs: Map<PubChan$EmitID, PubChan$SubscriberSet> = new Map();
-  +options: $StrictObject<PubChan$Options>;
+  +pathrefs: Map<PubChan$EmitID, PubChan$SubscriberSet>;
+  // +options: $StrictObject<PubChan$Options>;
+
+  callback: (
+    args: [PubChan$Ref, PubChan$ResolvedPipeline],
+  ) => void | Array<void | mixed> | mixed;
 
   constructor(pubchan: PubChan, options: $Shape<PubChan$Options>): Subscriber {
-    this.options = getSubscriberOptions(options);
+    this.callbacks = new Set();
+    this.pathrefs = new Map();
+    // this.options = getSubscriberOptions(options);
     this.pubchan = pubchan;
+    if (options.async) {
+      this.callback = args => asynchronously(executeCallback, args);
+    } else {
+      this.callback = executeCallback;
+    }
     return this;
   }
 
@@ -167,80 +160,60 @@ class Subscriber {
     return [...this.pathrefs.keys()];
   }
 
-  to = (...args: Array<PubChan$EmitIDs>) => {
-    // ACTIVE.add(this);
+  to(...args: Array<PubChan$EmitIDs>) {
     args.forEach(
       el =>
         (Array.isArray(el) ? this.to(...el) : addSubscriberToEvent(this, el)),
     );
     return this;
-  };
+  }
 
-  once = (
+  once(callback: PubChan$Callback, onComplete?: PubChan$CompleteCallback) {
+    return this.do(callback, onComplete, true);
+  }
+
+  do(
     callback: PubChan$Callback,
     onComplete?: PubChan$CompleteCallback,
-  ) => {
+    once?: boolean = false,
+  ) {
     const ref: PubChan$Ref = {
+      once,
+      state: {},
       subscription: this,
       chan: this.pubchan,
-      once: true,
-      state: {},
       cancel: () => handleRefCancellation(this, ref),
       callback,
     };
-    addCallbackToSubscriber(this, ref);
-    if (onComplete && typeof onComplete === 'function') {
+    this.callbacks.add(ref);
+    if (onComplete) {
       onComplete(ref);
       ref._state = ref.state;
     }
     return this;
-  };
+  }
 
-  do = (callback: PubChan$Callback, onComplete?: PubChan$CompleteCallback) => {
-    const ref: PubChan$Ref = {
-      subscription: this,
-      chan: this.pubchan,
-      state: {},
-      cancel: () => handleRefCancellation(this, ref),
-      callback,
-    };
-    addCallbackToSubscriber(this, ref);
-    if (onComplete && typeof onComplete === 'function') {
-      onComplete(ref);
-      ref._state = ref.state;
-    }
-    return this;
-  };
+  cancel() {
+    removeSubscriber(this);
+  }
 
-  cancel = () => removeSubscriber(this);
-
-  trigger = (
-    pipeline: PubChan$ResolvedPipeline,
-  ): Array<void | Array<mixed> | mixed> => {
+  trigger<P: PubChan$ResolvedPipeline>(
+    pipeline: P,
+  ): Array<void | Array<mixed> | mixed> {
     const results = [];
     this.callbacks.forEach(ref => {
-      let result;
       if (ref.once) {
         ref.cancel();
       }
-
       if (pipeline.state) {
         ref.state = proxiedState(pipeline, ref);
       } else if (ref._state) {
         ref.state = ref._state;
       }
-
-      // const args = [ref, pipeline.emit, ...pipeline.with];
-      if (!this.options.async) {
-        result = executeCallback(ref, pipeline.emit, pipeline.with);
-      } else {
-        result = handleAsyncCallback(ref, pipeline.emit, pipeline.with);
-      }
-
-      results.push(result);
+      results.push(this.callback([ref, pipeline]));
     });
     return results;
-  };
+  }
 }
 
 export default Subscriber;

@@ -4,13 +4,11 @@
     [
       "env",
       {
-        "debug": true,
         "targets": {
           "node": 8
         }
       }
-    ],
-    "minify"
+    ]
   ],
-  "plugins": ["transform-class-properties", "transform-object-rest-spread"]
+  "plugins": ["transform-object-rest-spread"]
 }

@@ -12,45 +12,45 @@ import type {
 } from '../types';
 
 import Subscriber from './subscriber';
+// import { asynchronously } from '../utils/async';
 
 const MATCH_ALL_KEY = '$all';
 const MATCH_CLOSE_KEY = '$closed';
 
-function findMatchingListeners(PubChan, matches, events, emit) {
+function findMatchingListeners(events) {
   if (Array.isArray(events)) {
-    events.forEach(event =>
-      findMatchingListeners(PubChan, matches, event, emit));
+    events.forEach(findMatchingListeners.bind(this));
   } else {
-    emit.add(events);
-    const set = PubChan.listeners.get(events);
+    this.pipeline.ids.add(events);
+    const set = this.listeners.get(events);
     if (set) {
-      set.forEach(match => matches.add(match));
+      set.forEach(match => this.pipeline.matches.add(match));
     }
   }
-  return matches;
 }
 
-function resolvePipelineState(state: Array<PubChan$State> = []) {
+function resolvePipelineState(state: Array<PubChan$State>) {
+  if (!state) return;
   return state.reduce((p, c) => {
     if (!c) return p;
     if (typeof c === 'function') {
-      return {
-        ...p,
-        ...(c(p) || {}),
-      };
+      return Object.assign(p, c(p));
     }
-    return {
-      ...p,
-      ...(c || {}),
-    };
+    return Object.assign(p, c);
   }, {});
 }
 
 class PubChan {
   pipeline: PubChan$Pipeline;
-  closed: boolean = false;
-  +listeners: PubChan$Listeners = new Map();
-  +subscribers: PubChan$SubscriberSet = new Set();
+  closed: boolean;
+  +listeners: PubChan$Listeners;
+  +subscribers: PubChan$SubscriberSet;
+
+  constructor() {
+    this.closed = false;
+    this.listeners = new Map();
+    this.subscribers = new Set();
+  }
 
   get length(): number {
     return this.listeners.size;
@@ -60,105 +60,114 @@ class PubChan {
     return this.listeners.size;
   }
 
-  emit = (...ids: Array<PubChan$EmitIDs>) => {
+  sizeof(...ids: Array<PubChan$EmitIDs>): number {
+    let size = 0;
+    if (ids.length === 0) {
+      this.listeners.forEach(listener => {
+        size += listener.size;
+      });
+    } else {
+      ids.forEach(id => {
+        const listener = this.listeners.get(id);
+        if (listener) {
+          size += listener.size;
+        }
+      });
+    }
+    return size;
+  }
+
+  emit(...ids: Array<PubChan$EmitIDs>) {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to emit to a closed pubchan');
     }
-    const emit = new Set();
-    const matches = new Set();
     this.pipeline = {
-      emit,
       with: [],
-      matches,
+      ids: new Set(),
+      matches: new Set(),
     };
-    if (this.size > 0) {
+    if (this.listeners.size) {
       const matchall = this.listeners.get(MATCH_ALL_KEY);
       if (matchall) {
-        matchall.forEach(match => matches.add(match));
+        matchall.forEach(match => this.pipeline.matches.add(match));
       }
-      ids.forEach(emitID => findMatchingListeners(this, matches, emitID, emit));
+      ids.forEach(findMatchingListeners.bind(this));
     }
     return this;
-  };
+  }
 
-  with = (...args: Array<any>) => {
-    if (this.pipeline && this.pipeline.matches.size > 0 && args.length > 0) {
+  with(...args: Array<any>) {
+    if (args.length && this.pipeline && this.pipeline.matches.size > 0) {
       this.pipeline.with = [...this.pipeline.with, ...args];
     }
     return this;
-  };
+  }
 
-  state = (...args: Array<?PubChan$State>) => {
-    if (this.pipeline && args.length > 0) {
+  state(...args: Array<?PubChan$State>) {
+    if (this.pipeline && args.length) {
       this.pipeline.state = args.reduce(
         (p, c) => p.concat(c || []),
         this.pipeline.state || [],
       );
     }
     return this;
-  };
+  }
 
-  send = async (...args: Array<any>): Promise<PubChan$EmitResponseRef> => {
+  async send(...args: Array<any>): Promise<PubChan$EmitResponseRef> {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to send to a closed pubchan');
+    } else if (!this.pipeline.matches.size) {
+      if (this.pipeline.state) {
+        return {
+          results: null,
+          state: resolvePipelineState(this.pipeline.state),
+        };
+      }
+      return { results: null };
     }
 
     const pipeline: PubChan$ResolvedPipeline = {
-      emit: this.pipeline.emit,
+      ids: this.pipeline.ids,
       with: this.pipeline.with,
       matches: this.pipeline.matches,
       state: this.pipeline.state && resolvePipelineState(this.pipeline.state),
     };
 
     // FIXME: Dont use delete once flow can handle it
-    delete this.pipeline;
+    // delete this.pipeline;
 
-    if (pipeline) {
-      if (pipeline.matches.size > 0) {
-        if (args.length > 0) {
-          this.with(...args);
-        }
-        const promises: Array<Array<void | Array<mixed> | mixed>> = [];
-
-        if (pipeline.matches.size > 0) {
-          pipeline.matches.forEach(match => {
-            promises.push(match.trigger(pipeline));
-          });
-        }
-        const promise = Promise.all(promises.reduce((p, c) => p.concat(c), []));
-        if (pipeline.state) {
-          return promise.then(results => ({
-            results,
-            state: pipeline.state,
-          }));
-        }
-        return promise.then(results => ({ results }));
-      }
-
-      if (pipeline.state) {
-        return {
-          results: null,
-          state: pipeline.state,
-        };
-      }
+    if (args.length) {
+      pipeline.with = pipeline.with.concat(args);
     }
 
-    return { results: null };
-  };
+    const responses: Array<void | Array<mixed> | mixed> = [];
 
-  subscribe = (options?: $Shape<PubChan$Options> = {}) => {
+    pipeline.matches.forEach(match =>
+      responses.push(...match.trigger(pipeline)));
+
+    const results = await Promise.all(responses);
+
+    if (pipeline.state) {
+      return {
+        results,
+        state: pipeline.state,
+      };
+    }
+
+    return { results };
+  }
+
+  subscribe(options?: $Shape<PubChan$Options> = {}) {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to subscribe to a closed pubchan');
     }
     const subscriber = new Subscriber(this, options);
     this.subscribers.add(subscriber);
     return subscriber;
-  };
+  }
 
-  close = async (...args: Array<any>) => {
-    if (this.size === 0) {
-      return null;
-    }
+  async close(...args: Array<any>) {
+    if (!this.size) return null;
     let result;
     if (this.listeners.has(MATCH_CLOSE_KEY)) {
       result = await this.emit(MATCH_CLOSE_KEY)
@@ -168,7 +177,7 @@ class PubChan {
     this.closed = true;
     this.subscribers.forEach(subscriber => subscriber.cancel());
     return result;
-  };
+  }
 }
 
 export default PubChan;

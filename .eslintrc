@@ -21,6 +21,7 @@
     "no-use-before-define": "off",
     "consistent-return": "off",
     "no-console": "off",
+    "no-restricted-syntax": "off",
     "flowtype/no-unused-expressions": "error",
     "max-len": ["error", { "code": 80, "ignoreComments": true, "ignoreStrings": true, "ignoreTemplateLiterals": true }]
   },
