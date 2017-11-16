@@ -1,6 +1,7 @@
 # pubchan
 
-Simple yet powerful pub/sub channels for Javascript and Node.js.
+Simple yet powerful async pub/sub channels for Javascript and Node.js with zero
+dependencies.
 
 Tiny, fast, and reliable pubsub event emitter with promises, optional result
 aggregation (state), and async/sync controls.

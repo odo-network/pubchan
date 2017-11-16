@@ -140,7 +140,7 @@ class Subscriber {
     this.pathrefs = new Map();
     // this.options = getSubscriberOptions(options);
     this.pubchan = pubchan;
-    if (options.async) {
+    if (options.async !== false) {
       this.callback = args => asynchronously(executeCallback, args);
     } else {
       this.callback = executeCallback;
