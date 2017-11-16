@@ -8,7 +8,8 @@
           "node": 8
         }
       }
-    ]
+    ],
+    "minify"
   ],
   "plugins": ["transform-object-rest-spread"]
 }

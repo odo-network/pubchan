@@ -1,6 +1,6 @@
 {
   "name": "pubchan",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Simple yet powerful pub/sub channels",
   "main": "lib/index.js",
   "author": "Braden R. Napier",
@@ -43,12 +43,8 @@
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.0.1",
-    "babel-plugin-fast-async": "^6.1.2",
-    "babel-plugin-transform-async-to-bluebird": "^1.1.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-promise-to-bluebird": "^1.1.1",
-    "babel-plugin-transform-remove-console": "^6.8.5",
     "babel-preset-env": "^1.6.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-minify": "^0.2.0",
