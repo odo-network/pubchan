@@ -20,7 +20,7 @@ export type PubChan$IDSet = Set<PubChan$EmitID>;
 type Callback = (
   ref: PubChan$Ref,
   ids: Set<PubChan$EmitID>,
-  ...args: Array<mixed>
+  ...args: Array<any>
 ) => void | (Array<any> | any);
 
 export type PubChan$Callback = Array<Callback> | Callback;
