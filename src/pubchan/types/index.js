@@ -2,6 +2,12 @@
 
 import Subscriber from '../classes/subscriber';
 import PubChan from '../classes/pubchan';
+import Middleware from '../classes/middleware';
+
+export type PubChan$Config<S> = {|
+  find?: PubChan$FindMiddleware<S>,
+  prepare?: PubChan$PrepareMiddleware<S>,
+|};
 
 export type PubChan$EmitID = mixed;
 
@@ -10,6 +16,19 @@ export type PubChan$Options = {|
 |};
 
 export type PubChan$EmitIDs = Array<PubChan$EmitID> | PubChan$EmitID;
+
+export type PubChan$FindMiddleware<S> = (
+  event: PubChan$EmitID,
+  matches: PubChan$Matches,
+  listeners: PubChan$Listeners,
+  middleware: Middleware<S>,
+) => void;
+
+export type PubChan$PrepareMiddleware<S> = (
+  matches: PubChan$Matches,
+  listeners: PubChan$Listeners,
+  middleware: Middleware<S>,
+) => void;
 
 export type PubChan$Matches = PubChan$SubscriberSet;
 

@@ -9,25 +9,18 @@ import type {
   PubChan$EmitResponseRef,
   PubChan$State,
   PubChan$ResolvedPipeline,
+  PubChan$FindMiddleware,
+  PubChan$PrepareMiddleware,
+  PubChan$Config,
 } from '../types';
 
 import Subscriber from './subscriber';
+import Middleware from './middleware';
+
 // import { asynchronously } from '../utils/async';
 
 const MATCH_ALL_KEY = '$all';
 const MATCH_CLOSE_KEY = '$closed';
-
-function findMatchingListeners(events) {
-  if (Array.isArray(events)) {
-    events.forEach(findMatchingListeners.bind(this));
-  } else {
-    this.pipeline.ids.add(events);
-    const set = this.listeners.get(events);
-    if (set) {
-      set.forEach(match => this.pipeline.matches.add(match));
-    }
-  }
-}
 
 function resolvePipelineState(state: Array<PubChan$State>) {
   if (!state) return;
@@ -45,11 +38,16 @@ class PubChan {
   closed: boolean;
   +listeners: PubChan$Listeners;
   +subscribers: PubChan$SubscriberSet;
+  middleware: Middleware<*>;
 
-  constructor() {
+  constructor(config?: PubChan$Config<*>) {
     this.closed = false;
     this.listeners = new Map();
     this.subscribers = new Set();
+    this.middleware =
+      config && (config.find || config.prepare)
+        ? new Middleware(this, config.find, config.prepare)
+        : new Middleware(this);
   }
 
   get length(): number {
@@ -77,6 +75,13 @@ class PubChan {
     return size;
   }
 
+  setMiddleware(
+    find?: PubChan$FindMiddleware<*>,
+    prepare?: PubChan$PrepareMiddleware<*>,
+  ) {
+    this.middleware = new Middleware(this, find, prepare);
+  }
+
   emit(...ids: Array<PubChan$EmitIDs>) {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to emit to a closed pubchan');
@@ -87,11 +92,11 @@ class PubChan {
       matches: new Set(),
     };
     if (this.listeners.size) {
+      this.middleware.match(ids);
       const matchall = this.listeners.get(MATCH_ALL_KEY);
       if (matchall) {
         matchall.forEach(match => this.pipeline.matches.add(match));
       }
-      ids.forEach(findMatchingListeners.bind(this));
     }
     return this;
   }
