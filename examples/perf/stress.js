@@ -2,7 +2,7 @@
 
 import { log, getNativeAsyncCost } from '../../utils/log';
 
-import createPubChan from '../../src/pubchan';
+import createPubChan from '../../src/lib';
 
 const chan = createPubChan();
 

@@ -6,42 +6,49 @@ import addWildcardMiddleware from '../../src/middleware/wildcard';
 const chan = createPubChan();
 addWildcardMiddleware(chan);
 
+let i = 0;
+
+const COUNT = 100000;
+
 getNativeAsyncCost().then(() => {
   // subscribe to ALL events synchronously ($ prefix denotes a possible utility event)
-  chan
-    .subscribe()
-    .to('foo:*', '*foo', 1, () => {})
-    .do((ref, ids) => log('FOO! ', ids));
+  const START = log('Building ', COUNT, ' subscriptions');
+  while (i < COUNT) {
+    chan
+      .subscribe()
+      .to('foo*', i)
+      .do(() => {
+        i += 1;
+      });
+    i += 1;
+  }
+  log('Done Building Subscriptions');
 
   // emit bar twice -- second callback will only happen twice but foo or bar
   // will happen both times.
 
   log('Start Emit: foo:one:two');
 
-  chan
-    .emit({ foo: 'bar' })
-    .send()
-    .then(results => {
-      log('foo:one:two emitted ', results);
-    });
-
-  log('Start Emit: bar:baz:foo');
-
-  chan
-    .emit('bar:baz:foo')
-    .send()
-    .then(results => {
-      log('bar:baz:foo emitted ', results);
-    });
-
-  log('Start Emit: bar:foo:baz');
+  // chan.emitAsync(['foo:one:two']).then(() => {
+  //   const END = log('foo:one:two emitted ', i);
+  //   console.log('Total Duration: ', END - START);
+  // });
+  //
+  // log('Start Emit: foo:one:two');
+  // chan.emitAsync(['foo:one:two']).then(() => {
+  //   const END = log('foo:one:two emitted ', i);
+  //   console.log('Total Duration: ', END - START);
+  // });
 
   chan
-    .emit('bar:foo:baz')
+    .emit({ foobar: 'baz' })
     .send()
-    .then(results => {
-      log('bar:baz:foo emitted ', results);
+    .then(() => {
+      const END = log('foo:one:two emitted ', i);
+      console.log('Total Duration: ', END - START);
     });
+
+  log('Done Emitting ', i);
 });
 
 /*

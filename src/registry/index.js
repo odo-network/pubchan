@@ -6,8 +6,8 @@
 
   This also allows us to easily introspect our pubchans.
 */
-import type { PubChan } from 'pubchan';
-import createPubChanInstance from 'pubchan';
+import type { PubChan } from '../lib';
+import createPubChanInstance from '../lib';
 
 interface getChan {
   (id: mixed, ...args: Array<void>): PubChan;
