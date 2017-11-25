@@ -6,13 +6,12 @@ import Wildcard from 'wildcard-utils';
 import type {
   PubChan$EmitID,
   PubChan$Listeners,
-  // PubChan$FnListeners,
   PubChan$Matches,
   PubChan$PrepareMiddleware,
   PubChan$FindMiddleware,
-} from '../../pubchan/types';
+} from '../../lib/types';
 
-import type { PubChan } from '../../pubchan';
+import type { PubChan } from '../../lib';
 
 /*
   Implements a PubChan which is capable of using wildcard matching
@@ -42,7 +41,6 @@ const handleWildcardFind: PubChan$FindMiddleware = function wildcardFind(
       typeof event === 'object' ||
       event instanceof Set)
   ) {
-    // const { keys } = middleware.state;
     const matched = WC.search(event);
     if (Array.isArray(matched) && matched.length) {
       matched.forEach(key => {
@@ -61,23 +59,9 @@ const handleWildcardFind: PubChan$FindMiddleware = function wildcardFind(
 const prepareWildcardSearch: PubChan$PrepareMiddleware = function prepareSearch(
   matches: PubChan$Matches,
   listeners: PubChan$Listeners,
-  // fnlisteners: PubChan$FnListeners,
   // middleware: Middleware,
 ) {
-  // pre-build our latest listen keys
-  // const keys = [...listeners.keys()].reduce((p, c) => {
-  //   if (
-  //     c != null &&
-  //     (typeof c === 'string' || typeof c === 'object' || Array.isArray(c))
-  //   ) {
-  //     // Flow Failure
-  //
-  //     p.push((c: Wildcard$ToPatternTypes));
-  //   }
-  //   return p;
-  // }, ([]: Array<Wildcard$ToPatternTypes>));
   WC.pattern([...listeners.keys()].filter(el => typeof el === 'string'));
-  // middleware.state = { keys };
 };
 
 function addWildcardMiddleware(pubchan: PubChan): PubChan {

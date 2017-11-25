@@ -34,10 +34,10 @@
     "flow": "flow",
     "build":
       "cross-env NODE_ENV=production rimraf lib registry middleware && npm-run-all -p build:**",
-    "build:pubchan:babel": "babel src/pubchan --out-dir lib",
+    "build:pubchan:babel": "babel src/lib --out-dir lib",
     "build:registry:babel": "babel src/registry --out-dir registry",
     "build:middleware:babel": "babel src/middleware --out-dir middleware",
-    "build:pubchan:flow": "flow-copy-source src/pubchan lib",
+    "build:pubchan:flow": "flow-copy-source src/lib lib",
     "build:registry:flow": "flow-copy-source src/registry registry",
     "build:middleware:flow": "flow-copy-source src/middleware middleware",
     "prepublish": "npm-run-all build"
