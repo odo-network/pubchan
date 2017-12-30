@@ -1,6 +1,7 @@
 node_modules
-lib
-scripts
+./lib
+./scripts
 private
 .DS_Store
 registry/
+./middleware/
