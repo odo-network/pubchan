@@ -5,9 +5,10 @@ import { log, getNativeAsyncCost } from '../../utils/log';
 import createPubChan from '../../src/lib';
 
 const chan = createPubChan();
+let executed = 0;
 
-async function asyncFn(str: string) {
-  return str;
+function execFn() {
+  executed += 1;
 }
 
 /*
@@ -24,35 +25,33 @@ async function asyncFn(str: string) {
   We call getNativeAsyncCost() because the first call to any timer has a
   general delay of 70ms+- which does not occur for future executions.
 */
-const SUBSCRIPTIONS = 10000;
+const SUBSCRIPTIONS = 100000;
 
 getNativeAsyncCost().then(() => {
-  let i = 0;
-
   log(`Creating ${SUBSCRIPTIONS} subscriptions`);
-  while (i < SUBSCRIPTIONS) {
-    i += 1;
+  for (let i = 0; i < SUBSCRIPTIONS; i += 1) {
     chan
-      .subscribe({ async: true })
+      .subscribe()
       .to('foo')
-      .do(() => asyncFn('foo'));
+      .do(execFn);
   }
+
   log('Complete, Chan Size: ', chan.sizeof());
 
   chan
     .emit('foo')
     .send()
     .then(() => {
-      log('Foo Emission Complete!');
+      console.log(log('Foo Emission Complete! Total Executed:', executed));
     });
 
-  log('Finished Evaluation');
+  log('Finished Evaluation ');
 });
 
 /*
-  +82.4602   623688945.926412     Native Async Startup Complete (nextTick)
-  +0.4504    623688946.376778     Start Perf Tests
-  +107.5361  623689053.912922     Chan Size:  10000
-  +53.2608   623689107.173682     Finished Evaluation
-  +232.0740  623689339.247657     Foo Emission Complete!
+  +0.0412    0.044035911560058594 Native Async Startup Complete (nextTick)
+  +1.3510    1.3950549364089966   Creating 100000 subscriptions
+  +144.2231  145.6181799173355    Complete, Chan Size:  100000
+  +44.3813   189.99945294857025   Finished Evaluation
+  +0.3499    190.34939897060394   Foo Emission Complete! Total Executed: 100000
 */

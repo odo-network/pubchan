@@ -12,10 +12,18 @@ import type {
 } from '../types';
 
 // import type { $StrictObject } from '../types/utils';
+import type { AsyncQueue } from '../utils/queue';
 
 import type PubChan from './pubchan';
 
 import { asynchronously } from '../utils/async';
+
+const ProxyObj = Object.create(null);
+
+const StaticPropertyDescriptor = Object.freeze({
+  enumerable: true,
+  configurable: true,
+});
 
 // function noop() {}
 // const FnWeakMap: WeakMap<Function, [mixed, Set<Subscriber>]> = new WeakMap();
@@ -83,63 +91,54 @@ function executeCallback(
 // for the publisher and consumer without the chance of consumer mutating
 // the publishers value(s).
 function proxiedState(pipeline: PubChan$ResolvedPipeline, ref: PubChan$Ref) {
-  return new Proxy(
-    {},
-    {
-      has(t, prop) {
-        if (pipeline.state && prop in pipeline.state) {
-          return true;
-        }
-        return Reflect.has(ref._state, prop);
-      },
-      get(t, prop) {
-        if (pipeline.state && Reflect.has(pipeline.state, prop)) {
-          return pipeline.state[prop];
-        } else if (ref._state) {
-          return ref._state[prop];
-        }
-      },
-      set(t, prop, value: mixed) {
-        return Reflect.set(ref._state, prop, value, ref._state);
-      },
-      deleteProperty(t, prop) {
-        if (ref._state && prop in ref._state) {
-          delete ref._state[prop];
-          return true;
-        }
-        return false;
-      },
-      ownKeys() {
-        return [
-          ...new Set(
-            [].concat(
-              Reflect.ownKeys(ref._state),
-              Reflect.ownKeys(pipeline.state),
-            ),
-          ),
-        ];
-      },
-      defineProperty(t, prop, descriptor) {
-        return Reflect.defineProperty(ref._state, prop, descriptor);
-      },
-      getOwnPropertyDescriptor(t, prop) {
-        if (
-          (pipeline.state && pipeline.state[prop]) ||
-          (ref._state && ref._state[prop])
-        ) {
-          return {
-            enumerable: true,
-            configurable: true,
-          };
-        }
-      },
+  return new Proxy(ProxyObj, {
+    has(t, prop) {
+      if (pipeline.state && prop in pipeline.state) {
+        return true;
+      }
+      return Reflect.has(ref._state, prop);
     },
-  );
+    get(t, prop) {
+      if (pipeline.state && Reflect.has(pipeline.state, prop)) {
+        return pipeline.state[prop];
+      }
+      if (ref._state) {
+        return ref._state[prop];
+      }
+    },
+    set(t, prop, value: mixed) {
+      return Reflect.set(ref._state, prop, value, ref._state);
+    },
+    deleteProperty(t, prop) {
+      if (ref._state && prop in ref._state) {
+        delete ref._state[prop];
+        return true;
+      }
+      return false;
+    },
+    ownKeys() {
+      return [
+        ...new Set(Reflect.ownKeys(ref._state).concat(Reflect.ownKeys(pipeline.state))),
+      ];
+    },
+    defineProperty(t, prop, descriptor) {
+      return Reflect.defineProperty(ref._state, prop, descriptor);
+    },
+    getOwnPropertyDescriptor(t, prop) {
+      if ((pipeline.state && pipeline.state[prop]) || (ref._state && ref._state[prop])) {
+        return StaticPropertyDescriptor;
+      }
+    },
+  });
 }
 
 class Subscriber {
+  +async: boolean;
+
   +pubchan: PubChan;
+
   +callbacks: Set<PubChan$Ref>;
+
   // hold refs to the sets which we are subscribed to for
   // easy access and unsubscribe.
   +pathrefs: Map<PubChan$EmitID, PubChan$SubscriberSet>;
@@ -154,11 +153,8 @@ class Subscriber {
     this.pathrefs = new Map();
     // this.options = getSubscriberOptions(options);
     this.pubchan = pubchan;
-    if (options.async !== false) {
-      this.callback = args => asynchronously(executeCallback, args);
-    } else {
-      this.callback = executeCallback;
-    }
+    this.async = options.async === true;
+    this.callback = executeCallback;
     return this;
   }
 
@@ -171,7 +167,7 @@ class Subscriber {
   }
 
   get keys(): Array<PubChan$EmitID> {
-    return [...this.pathrefs.keys()];
+    return Array.from(this.pathrefs.keys());
   }
 
   async(): Promise<Subscriber> {
@@ -180,8 +176,7 @@ class Subscriber {
 
   to(...args: Array<PubChan$EmitIDs>) {
     args.forEach(
-      el =>
-        (Array.isArray(el) ? this.to(...el) : addSubscriberToEvent(this, el)),
+      el => (Array.isArray(el) ? this.to(...el) : addSubscriberToEvent(this, el)),
     );
     return this;
   }
@@ -215,10 +210,7 @@ class Subscriber {
     removeSubscriber(this);
   }
 
-  trigger<P: PubChan$ResolvedPipeline>(
-    pipeline: P,
-  ): Array<void | Array<mixed> | mixed> {
-    const results = [];
+  trigger<P: PubChan$ResolvedPipeline>(pipeline: P, queue: AsyncQueue): void {
     this.callbacks.forEach(ref => {
       if (ref.once) {
         ref.cancel();
@@ -228,9 +220,12 @@ class Subscriber {
       } else if (ref._state) {
         ref.state = ref._state;
       }
-      results.push(this.callback([ref, pipeline]));
+      queue.push(
+        this.async
+          ? () => this.callback([ref, pipeline])
+          : this.callback([ref, pipeline]),
+      );
     });
-    return results;
   }
 }
 

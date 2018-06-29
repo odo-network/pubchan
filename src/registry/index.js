@@ -92,4 +92,6 @@ const PubChanRegistry = Object.freeze({
 
 export default PubChanRegistry;
 
-export { getPubChan, hasPubChan, pubChanKeys, pubChanValues, pubChanEntries };
+export {
+  getPubChan, hasPubChan, pubChanKeys, pubChanValues, pubChanEntries,
+};

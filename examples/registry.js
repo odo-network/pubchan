@@ -29,9 +29,11 @@ getNativeAsyncCost().then(() => {
 });
 
 /*
-  +75.2340   643405754.811798     Native Async Startup Complete (nextTick)
-  +2.9768    643405757.788587     Has Pub Chan?  true
-  +0.6116    643405758.400221     FOO!
-  +0.1456    643405758.545823     Emission Complete, Close PubChan mychan
-  +0.3416    643405758.887403     Has Pub Chan?  false
+  +0.0347    0.03764998912811279  Native Async Startup Complete (nextTick)
+  +1.5733    1.6109249591827393   Has Pub Chan?  true
+  +0.6749    2.285828948020935    FOO!
+  +0.3893    2.675160050392151    Emission Complete, Close PubChan mychan
+  +0.2954    2.9705770015716553   Has Pub Chan?  false
+
+  * without logging 1.5187809467315674 elapsed
 */

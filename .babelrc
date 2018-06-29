@@ -1,15 +1,14 @@
 {
-  "presets": [
-    "flow",
+  presets: [
+    '@babel/preset-flow',
     [
-      "env",
+      '@babel/preset-env',
       {
-        "targets": {
-          "node": 8
-        }
-      }
+        targets: {
+          node: '9',
+        },
+      },
     ],
-    "minify"
+    'minify',
   ],
-  "plugins": ["transform-object-rest-spread"]
 }

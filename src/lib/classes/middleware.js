@@ -32,15 +32,8 @@ function iterateEvents(
   middleware: PubChanMiddleware,
 ) {
   if (Array.isArray(events)) {
-    events.forEach(event =>
-      iterateEvents(
-        handler,
-        event,
-        matches,
-        listeners,
-        fnlisteners,
-        middleware,
-      ));
+    // eslint-ignore-next-line max-len
+    events.forEach(event => iterateEvents(handler, event, matches, listeners, fnlisteners, middleware));
   } else {
     middleware.pubchan.pipeline.ids.add(events);
     if (handler(events, matches, listeners, middleware) === null) {
@@ -59,8 +52,10 @@ function iterateEvents(
 // add new matching configurations if needed.
 class PubChanMiddleware {
   +pubchan: PubChan;
+
   // called for each received id/event
   +find: PubChan$FindMiddleware;
+
   // called before starting any matching
   +prepare: PubChan$PrepareMiddleware;
 

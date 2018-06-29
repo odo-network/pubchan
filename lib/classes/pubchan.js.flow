@@ -20,8 +20,12 @@ import Middleware from './middleware';
 
 import { asynchronously } from '../utils/async';
 
+import createAsyncQueue from '../utils/queue';
+
 const MATCH_ALL_KEY = '$all';
 const MATCH_CLOSE_KEY = '$closed';
+
+const NULL_RESULT = Object.freeze({ results: null });
 
 function resolvePipelineState(state: Array<PubChan$State>) {
   if (!state) return;
@@ -36,10 +40,15 @@ function resolvePipelineState(state: Array<PubChan$State>) {
 
 class PubChan {
   pipeline: PubChan$Pipeline;
+
   closed: boolean;
+
   +listeners: PubChan$Listeners;
+
   +subscribers: PubChan$SubscriberSet;
+
   +fnlisteners: PubChan$FnListeners;
+
   middleware: Middleware;
 
   constructor(config?: PubChan$Config) {
@@ -47,10 +56,9 @@ class PubChan {
     this.listeners = new Map();
     this.fnlisteners = new Map();
     this.subscribers = new Set();
-    this.middleware =
-      config && (config.find || config.prepare)
-        ? new Middleware(this, config.find, config.prepare)
-        : new Middleware(this);
+    this.middleware = config && (config.find || config.prepare)
+      ? new Middleware(this, config.find, config.prepare)
+      : new Middleware(this);
   }
 
   get length(): number {
@@ -78,10 +86,7 @@ class PubChan {
     return size;
   }
 
-  setMiddleware(
-    find?: PubChan$FindMiddleware,
-    prepare?: PubChan$PrepareMiddleware,
-  ) {
+  setMiddleware(find?: PubChan$FindMiddleware, prepare?: PubChan$PrepareMiddleware) {
     this.middleware = new Middleware(this, find, prepare);
   }
 
@@ -105,15 +110,13 @@ class PubChan {
   }
 
   emitAsync(ids: string | Array<PubChan$EmitIDs>, ...args: Array<any>) {
-    if (typeof ids === 'string') {
-      ids = [ids];
-    }
-    return asynchronously(() => this.emit(...ids).send(...args));
+    const fn = () => this.emit(Array.isArray(ids) ? ids : [ids]).send(...args);
+    return asynchronously(fn);
   }
 
   with(...args: Array<any>) {
     if (args.length && this.pipeline && this.pipeline.matches.size > 0) {
-      this.pipeline.with = [...this.pipeline.with, ...args];
+      this.pipeline.with.push(...args);
     }
     return this;
   }
@@ -138,7 +141,7 @@ class PubChan {
           state: resolvePipelineState(this.pipeline.state),
         };
       }
-      return { results: null };
+      return NULL_RESULT;
     }
 
     const pipeline: PubChan$ResolvedPipeline = {
@@ -148,28 +151,23 @@ class PubChan {
       state: this.pipeline.state && resolvePipelineState(this.pipeline.state),
     };
 
-    // FIXME: Dont use delete once flow can handle it
-    // delete this.pipeline;
-
     if (args.length) {
-      pipeline.with = pipeline.with.concat(args);
+      pipeline.with.push(...args);
     }
 
-    const responses: Array<void | Array<mixed> | mixed> = [];
+    const queue = createAsyncQueue();
 
-    pipeline.matches.forEach(match =>
-      responses.push(...match.trigger(pipeline)));
+    pipeline.matches.forEach(match => match.trigger(pipeline, queue));
 
-    const results = await Promise.all(responses);
+    const response: PubChan$EmitResponseRef = {
+      results: await queue.promise,
+    };
 
     if (pipeline.state) {
-      return {
-        results,
-        state: pipeline.state,
-      };
+      response.state = pipeline.state;
     }
 
-    return { results };
+    return response;
   }
 
   subscribe(options?: $Shape<PubChan$Options> = {}) {

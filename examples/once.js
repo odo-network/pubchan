@@ -34,10 +34,10 @@ getNativeAsyncCost().then(() => {
 });
 
 /*
-  +77.4480   643250397.257147     Native Async Startup Complete (nextTick)
-  +1.9965    643250399.25366      Subscribed To Next Event Only
-  +0.1195    643250399.373183     Channel Size (Before Emit):  1
-  +0.6107    643250399.983836     Set { [Function], 'foo', 'bar' } [ 'hello, world!' ]
-  +1.7448    643250401.728625     Channel Size (After Emit):  0
-  +0.1606    643250401.889194     DONE!
+  +0.0273    0.029353022575378418 Native Async Startup Complete (nextTick)
+  +1.3789    1.4082820415496826   Subscribed To Next Event Only
+  +0.2187    1.6269770860671997   Channel Size (Before Emit):  1
+  +0.6850    2.31194806098938     Set { [Function], 'foo', 'bar' } [ 'hello, world!' ]
+  +1.7004    4.012350082397461    Channel Size (After Emit):  0
+  +0.0949    4.107290983200073    DONE!
 */

@@ -87,18 +87,20 @@ getNativeAsyncCost().then(() => {
 });
 
 /*
-  +80.1632   643061208.450215     Native Async Startup Complete (nextTick)
-  +2.7730    643061211.223202     EVENTS EMITTED:  Set { 'bar' }
-  +1.4177    643061212.640947     First Callback!  []
-  +0.1248    643061212.7657       Second Callback!
-  +0.1537    643061212.919436     First Bar Emit Complete!  { results: [ '*', undefined, 'cancelled' ] }
-  +0.4205    643061213.339908     EVENTS EMITTED:  Set { 'bar' }
-  +0.1175    643061213.457383     First Callback!  []
-  +0.1044    643061213.561789     Second bar emit complete  { results: [ '*', undefined ] }
-  +0.0951    643061213.656853     EVENTS EMITTED:  Set { 'foo', 'kill' }
-  +0.0703    643061213.727182     First Callback!  [ 'one', 'two' ]
-  +0.1683    643061213.895443     Subscription Killed! { results: [ '*', 'killed' ] }
-  +0.2068    643061214.102226     EVENTS EMITTED:  Set { 'foo', 'bar', 'kill' }
-  +0.0519    643061214.154099     CLOSING CHANNEL!
-  +0.1657    643061214.319783     Only Match All is Left!  { results: [ '*' ] }
+  +0.0279    0.030407071113586426 Native Async Startup Complete (nextTick)
+  +2.0495    2.079913020133972    EVENTS EMITTED:  Set { 'bar' }
+  +1.4240    3.503882050514221    First Callback!  []
+  +0.1238    3.6277220249176025   Second Callback!
+  +0.2031    3.8308000564575195   First Bar Emit Complete!  { results: [ undefined, 'cancelled', '*' ] }
+  +0.4129    4.243713974952698    EVENTS EMITTED:  Set { 'bar' }
+  +0.0899    4.333595037460327    First Callback!  []
+  +0.0775    4.411064982414246    Second bar emit complete  { results: [ undefined, '*' ] }
+  +0.0832    4.49431300163269     EVENTS EMITTED:  Set { 'foo', 'kill' }
+  +0.0532    4.5475040674209595   First Callback!  [ 'one', 'two' ]
+  +0.1655    4.713003039360046    Subscription Killed! { results: [ 'killed', '*' ] }
+  +0.0711    4.784131050109863    EVENTS EMITTED:  Set { 'foo', 'bar', 'kill' }
+  +0.0414    4.825531005859375    CLOSING CHANNEL!
+  +0.1345    4.960064053535461    Only Match All is Left!  { results: [ '*' ] }
+
+  * without logging 1.616373062133789 elapsed
 */

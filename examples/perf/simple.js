@@ -38,21 +38,23 @@ getNativeAsyncCost().then(() => {
     .send()
     .then(() => {
       log('Foo Emission Complete!');
-      return chan
-        .emit('foo')
-        .send()
-        .then(() => {
-          log('Foo Emission Complete!');
-        });
+      return chan.emit('foo').send();
+    })
+    .then(() => {
+      log('Foo Emission Complete!');
     });
 
   log('Finished Evaluation');
 });
 
 /*
-  +82.4602   623688945.926412     Native Async Startup Complete (nextTick)
-  +0.4504    623688946.376778     Start Perf Tests
-  +107.5361  623689053.912922     Chan Size:  10000
-  +53.2608   623689107.173682     Finished Evaluation
-  +232.0740  623689339.247657     Foo Emission Complete!
+  +5.4829    NaN                  Benchmark Starting
+  +1.1150    NaN                  ------------------
+  +0.0010    0.0033990144729614258 Native Async Startup Complete (nextTick)
+  +0.1930    0.19638299942016602  Start PubChan
+  +0.8684    1.064805030822754    Finished Evaluation
+  +0.1940    1.2587599754333496   Do Foo!
+  +0.1631    1.4218770265579224   Foo Emission Complete!
+  +0.1041    1.5260149240493774   Do Foo!
+  +0.0581    1.5840959548950195   Foo Emission Complete!
 */

@@ -1,14 +1,36 @@
+[ignore]
+<PROJECT_ROOT>/\.junk/
+
 [libs]
-./flowlibs
+<PROJECT_ROOT>/flowlibs
 
 [options]
-unsafe.enable_getters_and_setters=true
+include_warnings=true
+emoji=true
+
 esproposal.class_static_fields=enable
 esproposal.class_instance_fields=enable
 esproposal.export_star_as=enable
-include_warnings=true
-; module.system.node.resolve_dirname=node_modules
-; module.system.node.resolve_dirname=./src
-suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe
-suppress_comment=\\(.\\|\n\\)*\\$FlowIssue
+esproposal.optional_chaining=enable
+esproposal.nullish_coalescing=enable
+experimental.const_params=true
+esproposal.decorators=ignore
+module.use_strict=true
+
+module.ignore_non_literal_requires=true
+
+munge_underscores=true
+
+module.file_ext=.js
+module.file_ext=.json
+
+suppress_type=$FlowIssue
+suppress_type=$FlowFixMe
+suppress_type=$FlowFixMeProps
+suppress_type=$FlowFixMeState
+
+suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)? *\\(site=[a-z,_]*react_native[a-z,_]*\\)?)\\)
+suppress_comment=\\(.\\|\n\\)*\\$FlowIssue\\((\\(<VERSION>\\)? *\\(site=[a-z,_]*react_native[a-z,_]*\\)?)\\)?:? #[0-9]+
+suppress_comment=\\(.\\|\n\\)*\\$FlowFixedInNextDeploy
+suppress_comment=\\(.\\|\n\\)*\\$FlowExpectedError
 suppress_comment=\\(.\\|\n\\)*\\$FlowIgnore

@@ -22,15 +22,17 @@
     "consistent-return": "off",
     "no-console": "off",
     "no-restricted-syntax": "off",
+    "import/no-cycle": "off",
     "flowtype/no-unused-expressions": "error",
-    "max-len": ["error", { "code": 80, "ignoreComments": true, "ignoreStrings": true, "ignoreTemplateLiterals": true }]
+    "max-len": [
+      "error",
+      {
+        "code": 90,
+        "ignoreComments": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true
+      }
+    ]
   },
-  "plugins": [
-    "flowtype"
-  ],
-   "settings": {
-    "flowtype": {
-      "onlyFilesWithFlowAnnotation": true
-    }
-  }
+  "plugins": ["flowtype"]
 }

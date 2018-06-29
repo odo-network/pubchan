@@ -60,20 +60,22 @@ getNativeAsyncCost().then(() => {
 });
 
 /*
-  +82.9568   642915961.83317      Native Async Startup Complete (nextTick)
-  +2.3002    642915964.133401     Start Eval
-  +0.4702    642915964.603646     Start Emit Foo and Bar (One)
-  +0.7098    642915965.31349      Finished Evaluation
-  +0.2909    642915965.604393     Foo Event
-  +0.0973    642915965.701646     Whoop Whoop!  foo
-  +0.1142    642915965.815873     Foo Emission Complete!  [ 'foo' ]
-  +1.4834    642915967.299288     Start Emission Two
-  +0.1378    642915967.437076     Emitting Foo and Bar!
-  +0.1502    642915967.58732      Bar Event
-  +0.0424    642915967.629693     Whoop Whoop!  bar
-  +0.0344    642915967.664084     Foo Event
-  +0.0245    642915967.688548     Whoop Whoop!  foo
-  +0.1599    642915967.848444     Result:  bar
-  +0.0337    642915967.882132     Result:  foo
-  +0.0561    642915967.938207     Async Example Completed!
+  +0.0244    0.02683401107788086  Native Async Startup Complete (nextTick)
+  +1.2221    1.2489420175552368   Start Eval
+  +0.3480    1.5969619750976562   Start Emit Foo and Bar (One)
+  +0.6564    2.2533990144729614   Finished Evaluation
+  +0.1929    2.4462499618530273   Foo Event
+  +0.0678    2.5140780210494995   Whoop Whoop!  foo
+  +0.1886    2.7026339769363403   Foo Emission Complete!  [ 'foo' ]
+  +1.2398    3.9424320459365845   Start Emission Two
+  +0.1058    4.048208951950073    Emitting Foo and Bar!
+  +0.1607    4.208904981613159    Bar Event
+  +0.2113    4.420217037200928    Whoop Whoop!  bar
+  +0.0388    4.459033012390137    Foo Event
+  +0.0270    4.4860600233078      Whoop Whoop!  foo
+  +0.0497    4.535755038261414    Result:  bar
+  +0.0293    4.565060019493103    Result:  foo
+  +0.0452    4.610306024551392    Async Example Completed!
+
+  * without logging 1.3370959758758545 elapsed
 */
