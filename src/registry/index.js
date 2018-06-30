@@ -10,13 +10,12 @@ import type { PubChan } from '../lib';
 import createPubChanInstance from '../lib';
 
 interface getChan {
-  (id: mixed, ...args: Array<void>): PubChan;
   (id: mixed, ifexists?: false): PubChan;
   (id: mixed, ifexists: void | false): PubChan;
   (id: mixed, ifexists: true): void | PubChan;
 }
 
-const PUBCHANS: Map<mixed, PubChan> = new Map();
+const PUBCHANS: Map<any, PubChan> = new Map();
 
 function handleChanCreate(id: mixed, chan: PubChan) {
   PUBCHANS.set(id, chan);
@@ -35,7 +34,6 @@ function handleChanCreate(id: mixed, chan: PubChan) {
   to Ignore the errors as the types are correct.
 */
 
-// $FlowIgnore
 const getPubChan = function getPubChanFn<I: mixed, B: boolean>(
   id: I,
   ifexists?: B,
@@ -70,15 +68,15 @@ function hasPubChan(...ids: Array<mixed>): boolean %checks {
 }
 
 function pubChanKeys() {
-  return [...PUBCHANS.keys()];
+  return Array.from(PUBCHANS.keys());
 }
 
 function pubChanValues() {
-  return [...PUBCHANS.entries()];
+  return Array.from(PUBCHANS.values());
 }
 
 function pubChanEntries() {
-  return [...PUBCHANS.entries()];
+  return Array.from(PUBCHANS.entries());
 }
 
 const PubChanRegistry = Object.freeze({

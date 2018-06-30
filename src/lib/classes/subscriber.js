@@ -11,7 +11,6 @@ import type {
   PubChan$ResolvedPipeline,
 } from '../types';
 
-// import type { $StrictObject } from '../types/utils';
 import type { AsyncQueue } from '../utils/queue';
 
 import type PubChan from './pubchan';
@@ -24,9 +23,6 @@ const StaticPropertyDescriptor = Object.freeze({
   enumerable: true,
   configurable: true,
 });
-
-// function noop() {}
-// const FnWeakMap: WeakMap<Function, [mixed, Set<Subscriber>]> = new WeakMap();
 
 function addSubscriberToEvent(sub, e) {
   let set;
@@ -63,12 +59,6 @@ function removeSubscriber(sub) {
   });
 }
 
-// const getSubscriberOptions = (
-//   options: $Shape<PubChan$Options>,
-// ): $StrictObject<PubChan$Options> => ({
-//   async: typeof options.async === 'boolean' ? options.async : false,
-// });
-
 function handleRefCancellation(sub: Subscriber, ref: PubChan$Ref) {
   sub.callbacks.delete(ref);
   if (!sub.callbacks.size) {
@@ -82,9 +72,9 @@ function executeCallback(
   if (!args) return;
   const [ref, pipeline] = args;
   if (Array.isArray(ref.callback)) {
-    return ref.callback.map(cb => cb(ref, pipeline.ids, ...pipeline.with));
+    return ref.callback.map(cb => cb.call(this, ref, pipeline.ids, ...pipeline.with));
   }
-  return ref.callback(ref, pipeline.ids, ...pipeline.with);
+  return ref.callback.call(this, ref, pipeline.ids, ...pipeline.with);
 }
 
 // provides a safe object which intermingles the global and local state
@@ -142,7 +132,8 @@ class Subscriber {
   // hold refs to the sets which we are subscribed to for
   // easy access and unsubscribe.
   +pathrefs: Map<PubChan$EmitID, PubChan$SubscriberSet>;
-  // +options: $StrictObject<PubChan$Options>;
+
+  _context: Object;
 
   callback: (
     args: [PubChan$Ref, PubChan$ResolvedPipeline],
@@ -154,6 +145,7 @@ class Subscriber {
     // this.options = getSubscriberOptions(options);
     this.pubchan = pubchan;
     this.async = options.async === true;
+    this._context = options.context || this;
     this.callback = executeCallback;
     return this;
   }
@@ -172,6 +164,11 @@ class Subscriber {
 
   async(): Promise<Subscriber> {
     return asynchronously(() => this);
+  }
+
+  context(context: Object) {
+    this._context = context || this.context;
+    return this;
   }
 
   to(...args: Array<PubChan$EmitIDs>) {
@@ -222,8 +219,8 @@ class Subscriber {
       }
       queue.push(
         this.async
-          ? () => this.callback([ref, pipeline])
-          : this.callback([ref, pipeline]),
+          ? () => this.callback.call(this._context, [ref, pipeline])
+          : this.callback.call(this._context, [ref, pipeline]),
       );
     });
   }

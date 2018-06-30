@@ -50,26 +50,26 @@ maintain it's 100% type coverage.
 ```js
 /* @flow */
 
-import createPubChan from 'pubchan';
+import createPubChan from "pubchan";
 
 const chan = createPubChan();
 
 // trigger asynchronously whenever foo is received
 chan
   .subscribe({ async: true })
-  .to('foo')
-  .do(() => console.log('foo 1!'));
+  .to("foo")
+  .do(() => console.log("foo 1!"));
 
 // trigger once synchronously then cancel
 chan
   .subscribe()
-  .to('foo')
-  .once(() => console.log('foo 2!'));
+  .to("foo")
+  .once(() => console.log("foo 2!"));
 
 chan
-  .emit('foo')
+  .emit("foo")
   .send()
-  .then(() => console.log('Finished Emitting foo!'));
+  .then(() => console.log("Finished Emitting foo!"));
 
 /*
   // Console Output -->
@@ -102,7 +102,7 @@ For more examples you can check out the
 Our default export, creates an instance of `PubChan`.
 
 ```js
-import createPubChan from 'pubchan';
+import createPubChan from "pubchan";
 const chan = createPubChan();
 ```
 
@@ -123,7 +123,7 @@ creating a new channel. However, you can also import the class directly if
 needed (can be useful for adding as flow type).
 
 ```js
-import { PubChan } from 'pubchan';
+import { PubChan } from "pubchan";
 const chan = new PubChan();
 ```
 
@@ -138,7 +138,7 @@ is useless unless created by an interface which matches the `PubChan`.
 
 ```js
 /* @flow */
-import type { Subscriber } from 'pubchan';
+import type { Subscriber } from "pubchan";
 ```
 
 ---
@@ -161,7 +161,7 @@ const PubChanRegistry = Object.freeze({
   keys: pubChanKeys,
   create: getPubChan,
   values: pubChanValues,
-  entries: pubChanEntries,
+  entries: pubChanEntries
 });
 
 export default PubChanRegistry;
@@ -186,8 +186,8 @@ should only be returned if it already exists. If set to `true` then the function
 will return `undefined` if the pubchan has not yet been created.
 
 ```js
-import getPubChan from 'pubchan/registry';
-const chan = getPubChan('mychan');
+import getPubChan from "pubchan/registry";
+const chan = getPubChan("mychan");
 ```
 
 ##### Type Signature
@@ -206,8 +206,8 @@ Check if the given PubChan(s) exists within the registry. Returns `true` if
 every `id` given is found.
 
 ```js
-import { hasPubChan } from 'pubchan/registry';
-if (hasPubChan('mychan', 'anotherchan')) {
+import { hasPubChan } from "pubchan/registry";
+if (hasPubChan("mychan", "anotherchan")) {
   // ...
 }
 ```
@@ -224,11 +224,10 @@ declare export function hasPubChan(...ids: Array<mixed>): boolean;
 
 ##### Overview
 
-Returns an array with all entries within the registry. Takes the form of `[id,
-id, ...]` inline with a call to a `Map`'s `.keys()` call cast to an `Array`.
+Returns an array with all entries within the registry. Takes the form of `[id, id, ...]` inline with a call to a `Map`'s `.keys()` call cast to an `Array`.
 
 ```js
-import { pubChanKeys } from 'pubchan/registry';
+import { pubChanKeys } from "pubchan/registry";
 for (const id of pubChanKeys()) {
   // ...
 }
@@ -246,11 +245,10 @@ declare export function pubChanKeys(): Array<mixed>;
 
 ##### Overview
 
-Returns an array with all entries within the registry. Takes the form of `[chan,
-chan, ...]` inline with a call to a `Map`'s `.values()` call cast to an `Array`.
+Returns an array with all entries within the registry. Takes the form of `[chan, chan, ...]` inline with a call to a `Map`'s `.values()` call cast to an `Array`.
 
 ```js
-import { pubChanValues } from 'pubchan/registry';
+import { pubChanValues } from "pubchan/registry";
 for (const chan of pubChanValues()) {
   // ...
 }
@@ -268,12 +266,11 @@ declare export function pubChanValues(): Array<PubChan>;
 
 ##### Overview
 
-Returns an array with all entries within the registry. Takes the form of `[[key,
-value], ...]` inline with a call to a `Map`'s `.entries()` call cast to an
+Returns an array with all entries within the registry. Takes the form of `[[key, value], ...]` inline with a call to a `Map`'s `.entries()` call cast to an
 `Array`.
 
 ```js
-import { pubChanEntries } from 'pubchan/registry';
+import { pubChanEntries } from "pubchan/registry";
 for (const [id, chan] of pubChanEntries()) {
   // ...
 }
@@ -303,8 +300,8 @@ import type {
   PubChan$EmitResponseRef,
   PubChan$State,
   PubChan$ResolvedPipeline,
-  PubChan$Ref,
-} from 'pubchan/lib/types';
+  PubChan$Ref
+} from "pubchan/lib/types";
 ```
 
 There are some useful [utility types](https://flow.org/en/docs/types/utilities/)
@@ -329,13 +326,14 @@ declare class PubChan {
   get length(): number,
   get size(): number,
 
-  emit: (...args: Array<Array<mixed> | mixed>) => this,
+  // emit the given ids and execute any matching subscribers
+  emit: (...args: Array<Array<mixed> | mixed>) => PubChan,
 
   // include args with the event emission
-  with: (...args: Array<any>) => this,
+  with: (...args: Array<any>) => PubChan,
 
   // include state with the event for chained emissions
-  state = (...args: Array<?{ [key: string]: any }>) => this,
+  state = (...args: Array<?{ [key: string]: any }>) => PubChan,
 
   // send the event and optionally include args to the handlers.
   send: (...args: Array<any>) => Promise<null> | Promise<Array<any>>,
@@ -344,7 +342,8 @@ declare class PubChan {
 
   subscribe: (
     options?: $Shape<{|
-      async: boolean,
+      async?: boolean,
+      context?: Object
     |}>,
   ) => Subscriber,
 }
@@ -388,20 +387,23 @@ declare class Subscriber {
   // all the ids we are subscribed to
   get keys(): Array<PubChan$EmitID>;
 
+  // optionally attach a custom context to all "do" and "once" callbacks
+  context: (context: Object) => Subscriber;
+
   // subscribe to EmitIDS
-  to: (...args: Array<PubChan$EmitIDs>) => this;
+  to: (...args: Array<PubChan$EmitIDs>) => Subscriber;
 
   // add a callback that will happen once then cancel itself
   once: (
     callback: PubChan$Callback,
-    onComplete?: PubChan$CompleteCallback,
-  ) => this;
+    onComplete?: PubChan$CompleteCallback
+  ) => Subscriber;
 
   // add a callback when this event occurs
   do: (
     callback: PubChan$Callback,
-    onComplete?: PubChan$CompleteCallback,
-  ) => this;
+    onComplete?: PubChan$CompleteCallback
+  ) => Subscriber;
 
   // cancel the entire subscriber
   cancel: () => void;

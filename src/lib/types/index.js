@@ -12,7 +12,8 @@ export type PubChan$Config = {|
 export type PubChan$EmitID = mixed;
 
 export type PubChan$Options = {|
-  async: boolean,
+  async?: boolean,
+  context?: Object,
 |};
 
 export type PubChan$EmitIDs = Array<PubChan$EmitID> | PubChan$EmitID;
@@ -94,12 +95,5 @@ export type PubChan$ResolvedPipeline = {|
   ...$Rest<$Exact<PubChan$Pipeline>, {| state?: Array<PubChan$State> |}>,
   state: void | PubChan$StateShape,
 |};
-
-// {
-//   emit: PubChan$IDSet,
-//   matches: PubChan$Matches,
-//   with: Array<mixed>,
-//   state?: Array<PubChan$State>,
-// };
 
 export type PubChan$CompleteCallback = (ref: PubChan$Ref) => ?mixed;
