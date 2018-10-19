@@ -1,5 +1,5 @@
 import registry from './src/registry';
-import { ALL } from './src/lib';
+import { SUBSCRIBE_ALL } from './src/lib';
 
 const chan = registry.get(Symbol.for('@test'));
 
@@ -9,7 +9,7 @@ process.nextTick(() => {
 
 chan
   .subscribe()
-  .to(ALL)
+  .to(SUBSCRIBE_ALL)
   .do(() => console.log('All'));
 
 const sub = chan

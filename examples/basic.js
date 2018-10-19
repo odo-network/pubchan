@@ -1,6 +1,6 @@
 /* @flow */
 import { log, getNativeAsyncCost } from '../utils/log';
-import createPubChan from '../src/lib';
+import createPubChan, { SUBSCRIBE_ALL, SUBSCRIBE_CLOSED } from '../src/lib';
 
 const chan = createPubChan();
 
@@ -8,10 +8,10 @@ getNativeAsyncCost().then(() => {
   // subscribe to ALL events synchronously ($ prefix denotes a possible utility event)
   chan
     .subscribe()
-    .to('$all', '$close')
+    .to(SUBSCRIBE_ALL, SUBSCRIBE_CLOSED)
     .do((ref, ids) => {
       log('EVENTS EMITTED: ', ids);
-      if (ids.has('$closed')) {
+      if (ids.has(SUBSCRIBE_CLOSED)) {
         // handle channel closure
         log('Channel Closed!');
       } else if (ref.chan.size === 2) {

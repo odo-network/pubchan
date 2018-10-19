@@ -178,7 +178,7 @@ Gets a `PubChan` with a given `id` which can be any type that can be a key on a
 creating a new one.
 
 `PubChan`'s that are created from the registry automatically subscribe to
-`$closed` events to clean themselves up when you close the channel from anywhere
+`CLOSED` events to clean themselves up when you close the channel from anywhere
 in the app.
 
 It's second argument optionally accepts a boolean which indicates if a `PubChan`

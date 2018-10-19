@@ -7,7 +7,7 @@
   This also allows us to easily introspect our pubchans.
 */
 import type { PubChan } from '../lib';
-import createPubChanInstance, { ALL, CLOSED } from '../lib';
+import createPubChanInstance, { SUBSCRIBE_ALL, SUBSCRIBE_CLOSED } from '../lib';
 
 interface getChan {
   (id: mixed, ifexists?: false): PubChan;
@@ -21,7 +21,7 @@ function handleChanCreate(id: mixed, chan: PubChan) {
   PUBCHANS.set(id, chan);
   chan
     .subscribe()
-    .to(CLOSED)
+    .to(SUBSCRIBE_CLOSED)
     .do(ref => {
       PUBCHANS.delete(id);
       ref.cancel();
@@ -91,8 +91,8 @@ const PubChanRegistry = Object.freeze({
 export default PubChanRegistry;
 
 export {
-  ALL,
-  CLOSED,
+  SUBSCRIBE_ALL,
+  SUBSCRIBE_CLOSED,
   getPubChan,
   hasPubChan,
   pubChanKeys,

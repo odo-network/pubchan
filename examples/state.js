@@ -1,6 +1,6 @@
 /* @flow */
 import { log, getNativeAsyncCost } from '../utils/log';
-import createPubChan from '../src/lib';
+import createPubChan, { SUBSCRIBE_ALL } from '../src/lib';
 
 getNativeAsyncCost().then(() => {
   const chan = createPubChan();
@@ -25,7 +25,7 @@ getNativeAsyncCost().then(() => {
   */
   chan
     .subscribe()
-    .to('$all')
+    .to(SUBSCRIBE_ALL)
     .do(
       (ref, ids) => {
         const { state }: { state: SubscriberState } = ref;

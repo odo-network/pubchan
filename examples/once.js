@@ -1,6 +1,6 @@
 /* @flow */
 import { log, getNativeAsyncCost } from '../utils/log';
-import createPubChan from '../src/lib';
+import createPubChan, { SUBSCRIBE_ALL } from '../src/lib';
 
 const chan = createPubChan();
 
@@ -8,7 +8,7 @@ getNativeAsyncCost().then(() => {
   // take the first event emitted then cancel ourselves
   chan
     .subscribe()
-    .to('$all')
+    .to(SUBSCRIBE_ALL)
     .once(
       (ref, ids, ...args) => {
         log(ids, args);

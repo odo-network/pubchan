@@ -1,13 +1,13 @@
 /* @flow */
 import { log, getNativeAsyncCost } from '../utils/log';
-import createPubChan from '../src/lib';
+import createPubChan, { SUBSCRIBE_ALL, SUBSCRIBE_CLOSED } from '../src/lib';
 
 const chan = createPubChan();
 
 function executeSubscriptionWithContext(ref, ids) {
   console.log('Context of Subscription: ', this);
   log('EVENTS EMITTED: ', ids);
-  if (ids.has('$closed')) {
+  if (ids.has(SUBSCRIBE_CLOSED)) {
     // handle channel closure
     log('Channel Closed!');
   } else if (ref.chan.size === 2) {
@@ -26,7 +26,7 @@ getNativeAsyncCost().then(() => {
   // if no context is provided, "this" will refer to the subscriber.
   chan
     .subscribe({ context: { test: 'success!' } })
-    .to('$all', '$close')
+    .to(SUBSCRIBE_ALL, SUBSCRIBE_CLOSED)
     .do(executeSubscriptionWithContext);
 
   chan
