@@ -12,17 +12,11 @@ chan
   .to(ALL)
   .do(() => console.log('All'));
 
-const sub = chan
+chan
   .subscribe({ async: true })
   .to('test')
   .do(() => {
     console.log('Test Received');
-    sub.cancel();
   });
 
-chan
-  .emit('test')
-  .send()
-  .then(() => {
-    chan.emit('test').send();
-  });
+chan.emit('test').send();

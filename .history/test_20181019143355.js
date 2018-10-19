@@ -20,9 +20,4 @@ const sub = chan
     sub.cancel();
   });
 
-chan
-  .emit('test')
-  .send()
-  .then(() => {
-    chan.emit('test').send();
-  });
+chan.emit('test').send();

@@ -45,7 +45,7 @@ function addSubscriberToEvent(sub, e) {
 
 function removeSubscriber(sub) {
   sub._context = undefined;
-  return sub.pathrefs.forEach((set, e) => {
+  sub.pathrefs.forEach((set, e) => {
     set.delete(sub);
     sub.pathrefs.delete(e);
     if (!set.size) {
@@ -58,6 +58,9 @@ function removeSubscriber(sub) {
       }
     }
   });
+  console.log('n');
+  console.log(sub.pubchan.fnlisteners.size);
+  console.log(sub.pubchan.listeners.size);
 }
 
 function handleRefCancellation(sub: Subscriber, ref: PubChan$Ref) {

@@ -1,6 +1,6 @@
 {
   "name": "pubchan",
-  "version": "1.9.0",
+  "version": "1.8.0",
   "description": "Simple, powerful, and blazing fast pub/sub channels with middleware",
   "main": "lib/index.js",
   "author": "odo",

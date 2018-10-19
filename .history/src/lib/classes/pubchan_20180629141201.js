@@ -22,8 +22,8 @@ import { asynchronously } from '../utils/async';
 
 import createAsyncQueue from '../utils/queue';
 
-export const ALL = Symbol.for('@pubchan/all_emits');
-export const CLOSED = Symbol.for('@pubchan/channel_closed');
+const MATCH_ALL_KEY = '$all';
+const MATCH_CLOSE_KEY = '$closed';
 
 const NULL_RESULT = Object.freeze({ results: null });
 
@@ -101,7 +101,7 @@ class PubChan {
     };
     if (this.listeners.size) {
       this.middleware.match(ids);
-      const matchall = this.listeners.get(ALL);
+      const matchall = this.listeners.get(MATCH_ALL_KEY);
       if (matchall) {
         matchall.forEach(match => this.pipeline.matches.add(match));
       }
@@ -182,8 +182,8 @@ class PubChan {
   async close(...args: Array<any>) {
     if (!this.size) return null;
     let result;
-    if (this.listeners.has(CLOSED)) {
-      result = await this.emit(CLOSED)
+    if (this.listeners.has(MATCH_CLOSE_KEY)) {
+      result = await this.emit(MATCH_CLOSE_KEY)
         .with(args)
         .send();
     }

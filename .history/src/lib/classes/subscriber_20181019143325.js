@@ -58,6 +58,8 @@ function removeSubscriber(sub) {
       }
     }
   });
+  console.log(sub.pubchan.fnlisteners.size);
+  console.log(sub.pubchan.listeners.size);
 }
 
 function handleRefCancellation(sub: Subscriber, ref: PubChan$Ref) {

@@ -182,8 +182,8 @@ class PubChan {
   async close(...args: Array<any>) {
     if (!this.size) return null;
     let result;
-    if (this.listeners.has(CLOSED)) {
-      result = await this.emit(CLOSED)
+    if (this.listeners.has(MATCH_CLOSE_KEY)) {
+      result = await this.emit(MATCH_CLOSE_KEY)
         .with(args)
         .send();
     }
