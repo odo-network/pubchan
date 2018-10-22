@@ -84,12 +84,21 @@ export type PubChan$EmitResponseRef = {
 
 export type PubChan$Listeners = Map<PubChan$EmitID, PubChan$SubscriberSet>;
 
-export type PubChan$Pipeline = {
-  ids: PubChan$IDSet,
-  matches: PubChan$Matches,
-  with: Array<mixed>,
-  state?: Array<PubChan$State>,
-};
+export type PubChan$Pipeline =
+  | {|
+      +broadcast: true,
+      ids?: void,
+      matches: PubChan$Matches,
+      with: Array<mixed>,
+      state?: Array<PubChan$State>,
+    |}
+  | {|
+      +broadcast: false,
+      ids: PubChan$IDSet,
+      matches: PubChan$Matches,
+      with: Array<mixed>,
+      state?: Array<PubChan$State>,
+    |};
 
 export type PubChan$ResolvedPipeline = {|
   ...$Rest<$Exact<PubChan$Pipeline>, {| state?: Array<PubChan$State> |}>,

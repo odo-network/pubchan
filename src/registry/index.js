@@ -63,7 +63,7 @@ function createPubChan(id: mixed): PubChan {
 // it in the future as this will be the syntax expected.
 //
 // in the meantime, it should not cause any errors or problems.
-function hasPubChan(...ids: Array<mixed>): boolean %checks {
+function hasPubChan(...ids: Array<mixed>): boolean {
   return ids.every(id => PUBCHANS.get(id) !== undefined);
 }
 
