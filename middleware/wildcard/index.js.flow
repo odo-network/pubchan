@@ -36,10 +36,8 @@ const handleWildcardFind: PubChan$FindMiddleware = function wildcardFind(
   // middleware: Middleware<WildcardMiddleware$State>,
 ) {
   if (
-    event &&
-    (typeof event === 'string' ||
-      typeof event === 'object' ||
-      event instanceof Set)
+    event
+    && (typeof event === 'string' || typeof event === 'object' || event instanceof Set)
   ) {
     const matched = WC.search(event);
     if (Array.isArray(matched) && matched.length) {

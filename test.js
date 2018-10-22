@@ -21,8 +21,8 @@ const sub = chan
   });
 
 chan
-  .emit('test')
+  .broadcast()
   .send()
   .then(() => {
-    chan.emit('test').send();
+    chan.broadcast('test').send();
   });

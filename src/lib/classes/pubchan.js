@@ -90,12 +90,25 @@ class PubChan {
     this.middleware = new Middleware(this, find, prepare);
   }
 
+  broadcast() {
+    if (this.closed) {
+      throw new Error('[pubchan]: Tried to emit to a closed pubchan');
+    }
+    this.pipeline = {
+      with: [],
+      broadcast: true,
+      matches: new Set(this.subscribers),
+    };
+    return this;
+  }
+
   emit(...ids: Array<PubChan$EmitIDs>) {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to emit to a closed pubchan');
     }
     this.pipeline = {
       with: [],
+      broadcast: false,
       ids: new Set(),
       matches: new Set(),
     };
@@ -145,6 +158,7 @@ class PubChan {
     }
 
     const pipeline: PubChan$ResolvedPipeline = {
+      broadcast: this.pipeline.broadcast,
       ids: this.pipeline.ids,
       with: this.pipeline.with,
       matches: this.pipeline.matches,
