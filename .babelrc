@@ -1,14 +1,14 @@
 {
   presets: [
-    '@babel/preset-flow',
+    "@babel/preset-flow",
     [
-      '@babel/preset-env',
+      "@babel/preset-env",
       {
         targets: {
-          node: '9',
-        },
-      },
-    ],
-    'minify',
+          node: "9"
+        }
+      }
+    ]
   ],
+  plugins: [["@babel/plugin-proposal-class-properties", { loose: true }]]
 }

@@ -8,6 +8,6 @@ export default function createPubChan(): PubChan {
   return new PubChan();
 }
 
-export { SUBSCRIBE_ALL, SUBSCRIBE_CLOSED } from './classes/pubchan';
+export { BROADCAST, SUBSCRIBE_ALL, SUBSCRIBE_CLOSED } from './classes/pubchan';
 
 export { PubChan, Subscriber, Middleware };

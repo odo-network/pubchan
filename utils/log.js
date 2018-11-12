@@ -1,5 +1,4 @@
 /* @flow */
-
 import { performance } from 'perf_hooks';
 
 let lastLog = performance.now();

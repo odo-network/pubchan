@@ -1,6 +1,6 @@
 /* @flow */
 
-import Subscriber from '../classes/subscriber';
+import type Subscriber from '../classes/subscriber';
 import PubChan from '../classes/pubchan';
 import Middleware from '../classes/middleware';
 
@@ -9,12 +9,14 @@ export type PubChan$Config = {|
   prepare?: PubChan$PrepareMiddleware,
 |};
 
-export type PubChan$EmitID = mixed;
+export type PubChan$EmitID = any;
 
 export type PubChan$Options = {|
   async?: boolean,
   context?: Object,
 |};
+
+export type TestType = number;
 
 export type PubChan$EmitIDs = Array<PubChan$EmitID> | PubChan$EmitID;
 
@@ -62,13 +64,13 @@ export interface PubChan$Ref {
   +chan: PubChan;
   +callback: PubChan$Callback;
   +cancel: () => void;
-  _state?: $Shape<{ [key: string]: * }>;
-  state: $Shape<{ [key: string]: * }>;
+  _state?: PubChan$StateShape;
+  state?: PubChan$StateShape;
 }
 
 export type PubChan$StateShape = {
   // $call?: void,
-  [key: string]: mixed,
+  [key: string]: any,
 };
 
 export type PubChan$StateResolver = (
@@ -79,26 +81,18 @@ export type PubChan$State = PubChan$StateShape | PubChan$StateResolver;
 
 export type PubChan$EmitResponseRef = {
   results: null | Array<mixed> | mixed,
-  state?: PubChan$StateShape,
+  state?: void | PubChan$StateShape,
 };
 
 export type PubChan$Listeners = Map<PubChan$EmitID, PubChan$SubscriberSet>;
 
-export type PubChan$Pipeline =
-  | {|
-      +broadcast: true,
-      ids?: void,
-      matches: PubChan$Matches,
-      with: Array<mixed>,
-      state?: Array<PubChan$State>,
-    |}
-  | {|
-      +broadcast: false,
-      ids: PubChan$IDSet,
-      matches: PubChan$Matches,
-      with: Array<mixed>,
-      state?: Array<PubChan$State>,
-    |};
+export type PubChan$Pipeline = {|
+  broadcast: boolean,
+  ids: PubChan$IDSet,
+  matches: PubChan$Matches,
+  with: Array<mixed>,
+  state?: Array<PubChan$State>,
+|};
 
 export type PubChan$ResolvedPipeline = {|
   ...$Rest<$Exact<PubChan$Pipeline>, {| state?: Array<PubChan$State> |}>,

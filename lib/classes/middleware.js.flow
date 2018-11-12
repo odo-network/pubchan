@@ -1,5 +1,6 @@
 /* @flow */
 import type PubChan from './pubchan';
+
 import type {
   PubChan$FindMiddleware,
   PubChan$PrepareMiddleware,
@@ -33,7 +34,9 @@ function iterateEvents(
 ) {
   if (Array.isArray(events)) {
     // eslint-ignore-next-line max-len
-    events.forEach(event => iterateEvents(handler, event, matches, listeners, fnlisteners, middleware));
+    events.forEach(event => {
+      iterateEvents(handler, event, matches, listeners, fnlisteners, middleware);
+    });
   } else {
     middleware.pubchan.pipeline.ids.add(events);
     if (handler(events, matches, listeners, middleware) === null) {

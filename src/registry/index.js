@@ -9,12 +9,6 @@
 import type { PubChan } from '../lib';
 import createPubChanInstance, { SUBSCRIBE_ALL, SUBSCRIBE_CLOSED } from '../lib';
 
-interface getChan {
-  (id: mixed, ifexists?: false): PubChan;
-  (id: mixed, ifexists: void | false): PubChan;
-  (id: mixed, ifexists: true): void | PubChan;
-}
-
 const PUBCHANS: Map<any, PubChan> = new Map();
 
 function handleChanCreate(id: mixed, chan: PubChan) {
@@ -28,24 +22,11 @@ function handleChanCreate(id: mixed, chan: PubChan) {
     });
 }
 
-/*
-  Flow is not capable of properly refining the type based on an
-  argument parameter so this "hack" allows it to do so.  We need
-  to Ignore the errors as the types are correct.
-*/
-
-const getPubChan = function getPubChanFn<I: mixed, B: boolean>(
-  id: I,
-  ifexists?: B,
-): $Call<getChan, I, B> {
+const getPubChan = function getPubChanFn(id: any) {
   const chan = PUBCHANS.get(id);
-  if (!ifexists) {
-    if (!chan) {
-      return createPubChan(id);
-    }
-    return chan;
+  if (!chan) {
+    return createPubChan(id);
   }
-  // $FlowIgnore
   return chan;
 };
 
@@ -68,15 +49,15 @@ function hasPubChan(...ids: Array<mixed>): boolean {
 }
 
 function pubChanKeys() {
-  return Array.from(PUBCHANS.keys());
+  return (Array.from(PUBCHANS.keys()): any[]);
 }
 
 function pubChanValues() {
-  return Array.from(PUBCHANS.values());
+  return (Array.from(PUBCHANS.values()): PubChan[]);
 }
 
 function pubChanEntries() {
-  return Array.from(PUBCHANS.entries());
+  return (Array.from(PUBCHANS.entries()): Array<[any, PubChan]>);
 }
 
 const PubChanRegistry = Object.freeze({

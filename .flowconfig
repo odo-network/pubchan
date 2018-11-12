@@ -1,8 +1,11 @@
 [ignore]
 <PROJECT_ROOT>/\.junk/
+<PROJECT_ROOT>/lib/
+<PROJECT_ROOT>/registry/
+<PROJECT_ROOT>/middleware/
 
 [libs]
-<PROJECT_ROOT>/flowlibs
+flowlibs
 
 [options]
 include_warnings=true

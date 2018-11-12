@@ -2,42 +2,45 @@
 
 import { asynchronously } from './async';
 
-export class AsyncQueue {
-  queue: Set<any>;
+function AsyncQueue() {
+  let promise;
+  const queue = new Set();
 
-  _promise: Promise<mixed[]>;
-
-  get promise() {
-    return this._promise || Promise.resolve([]);
-  }
-
-  constructor() {
-    this.queue = new Set();
-    (this: Object).flush = this.flush.bind(this);
-    (this: Object).push = this.push.bind(this);
-  }
-
-  flush() {
+  function flush() {
     const results = [];
-    this.queue.forEach(
-      cb => (typeof cb === 'function' ? results.push(cb()) : results.push(cb)),
-    );
-    this.queue.clear();
+    queue.forEach(cb => {
+      if (typeof cb === 'function') {
+        results.push(cb());
+      } else {
+        results.push(cb);
+      }
+    });
+    queue.clear();
     if (results.length) {
       return Promise.all(results);
     }
-    return results;
+    return Promise.resolve(results);
   }
 
-  push(cb: any): Promise<mixed[]> {
-    if (this.queue.size === 0) {
-      this._promise = asynchronously(this.flush);
+  function push(cb: any) {
+    if (queue.size === 0) {
+      promise = asynchronously(flush);
     }
-    this.queue.add(cb);
-    return this._promise;
+    queue.add(cb);
+    return promise;
   }
+
+  return {
+    get promise() {
+      return promise || Promise.resolve([]);
+    },
+    flush,
+    push,
+  };
 }
 
+export type AsyncQueueType = $Call<typeof AsyncQueue>;
+
 export default function buildAsyncQueueFactory() {
-  return new AsyncQueue();
+  return AsyncQueue();
 }

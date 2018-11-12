@@ -7,5 +7,5 @@ declare module 'perf_hooks' {
     now(): NodeHighResTimeStamp;
   }
 
-  declare var performance: Performance;
+  declare export var performance: Performance;
 }

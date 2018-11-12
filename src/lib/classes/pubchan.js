@@ -8,6 +8,7 @@ import type {
   PubChan$SubscriberSet,
   PubChan$EmitResponseRef,
   PubChan$State,
+  PubChan$StateShape,
   PubChan$ResolvedPipeline,
   PubChan$FindMiddleware,
   PubChan$PrepareMiddleware,
@@ -19,16 +20,19 @@ import Subscriber from './subscriber';
 import Middleware from './middleware';
 
 import { asynchronously } from '../utils/async';
+import { frozenSet } from '../utils/freeze';
 
 import createAsyncQueue from '../utils/queue';
 
 export const SUBSCRIBE_ALL = Symbol.for('@pubchan/all_emits');
 export const SUBSCRIBE_CLOSED = Symbol.for('@pubchan/channel_closed');
+export const BROADCAST = Symbol.for('@pubchan/broadcast');
+
+const BROADCAST_SET = frozenSet(new Set([BROADCAST]));
 
 const NULL_RESULT = Object.freeze({ results: null });
 
-function resolvePipelineState(state: Array<PubChan$State>) {
-  if (!state) return;
+function resolvePipelineState(state: Array<PubChan$State>): PubChan$StateShape {
   return state.reduce((p, c) => {
     if (!c) return p;
     if (typeof c === 'function') {
@@ -38,8 +42,22 @@ function resolvePipelineState(state: Array<PubChan$State>) {
   }, {});
 }
 
+/*
+  When we are broadcasting we do not want to
+  send to certain subscribers which are only
+  listening for special cases (currently chan closed).
+*/
+function filterSpecialSubscriptions(subscribers) {
+  return [...subscribers].filter(subscriber => {
+    const { keys } = subscriber;
+    return !(keys.has(SUBSCRIBE_CLOSED) && keys.size === 1);
+  });
+}
+
 class PubChan {
   pipeline: PubChan$Pipeline;
+
+  middleware: Middleware;
 
   closed: boolean;
 
@@ -48,8 +66,6 @@ class PubChan {
   +subscribers: PubChan$SubscriberSet;
 
   +fnlisteners: PubChan$FnListeners;
-
-  middleware: Middleware;
 
   constructor(config?: PubChan$Config) {
     this.closed = false;
@@ -95,9 +111,10 @@ class PubChan {
       throw new Error('[pubchan]: Tried to emit to a closed pubchan');
     }
     this.pipeline = {
+      ids: BROADCAST_SET,
       with: [],
       broadcast: true,
-      matches: new Set(this.subscribers),
+      matches: new Set(filterSpecialSubscriptions(this.subscribers)),
     };
     return this;
   }
@@ -122,8 +139,9 @@ class PubChan {
     return this;
   }
 
-  emitAsync(ids: string | Array<PubChan$EmitIDs>, ...args: Array<any>) {
-    const fn = () => this.emit(Array.isArray(ids) ? ids : [ids]).send(...args);
+  emitAsync(_ids: string | Array<PubChan$EmitIDs>, ...args: Array<any>) {
+    const ids: Array<PubChan$EmitIDs> = Array.isArray(_ids) ? _ids : [_ids];
+    const fn = () => this.emit(ids).send(...args);
     return asynchronously(fn);
   }
 
@@ -151,7 +169,9 @@ class PubChan {
       if (this.pipeline.state) {
         return {
           results: null,
-          state: resolvePipelineState(this.pipeline.state),
+          state: this.pipeline.state
+            ? resolvePipelineState(this.pipeline.state)
+            : undefined,
         };
       }
       return NULL_RESULT;
@@ -162,7 +182,7 @@ class PubChan {
       ids: this.pipeline.ids,
       with: this.pipeline.with,
       matches: this.pipeline.matches,
-      state: this.pipeline.state && resolvePipelineState(this.pipeline.state),
+      state: this.pipeline.state ? resolvePipelineState(this.pipeline.state) : undefined,
     };
 
     if (args.length) {
@@ -189,12 +209,11 @@ class PubChan {
       throw new Error('[pubchan]: Tried to subscribe to a closed pubchan');
     }
     const subscriber = new Subscriber(this, options);
-    this.subscribers.add(subscriber);
     return subscriber;
   }
 
   async close(...args: Array<any>) {
-    if (!this.size) return null;
+    if (this.size === 0) return null;
     let result;
     if (this.listeners.has(SUBSCRIBE_CLOSED)) {
       result = await this.emit(SUBSCRIBE_CLOSED)

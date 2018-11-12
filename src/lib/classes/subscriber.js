@@ -11,13 +11,11 @@ import type {
   PubChan$ResolvedPipeline,
 } from '../types';
 
-import type { AsyncQueue } from '../utils/queue';
+import type { AsyncQueueType } from '../utils/queue';
 
 import type PubChan from './pubchan';
 
-import { asynchronously } from '../utils/async';
-
-const ProxyObj = Object.create(null);
+const ProxyObj = Object.freeze({});
 
 const StaticPropertyDescriptor = Object.freeze({
   enumerable: true,
@@ -41,13 +39,15 @@ function addSubscriberToEvent(sub, e) {
   }
   set.add(sub);
   sub.pathrefs.set(e, set);
+  if (!sub.pubchan.subscribers.has(sub)) {
+    sub.pubchan.subscribers.add(sub);
+  }
 }
 
 function removeSubscriber(sub) {
   sub._context = undefined;
-  return sub.pathrefs.forEach((set, e) => {
+  sub.pathrefs.forEach((set, e) => {
     set.delete(sub);
-    sub.pathrefs.delete(e);
     if (!set.size) {
       if (typeof e === 'function') {
         sub.pubchan.fnlisteners.delete(e);
@@ -58,6 +58,8 @@ function removeSubscriber(sub) {
       }
     }
   });
+  sub.pathrefs.clear();
+  sub.pubchan.subscribers.delete(sub);
 }
 
 function handleRefCancellation(sub: Subscriber, ref: PubChan$Ref) {
@@ -136,20 +138,14 @@ class Subscriber {
 
   _context: void | Object;
 
-  callback: (
-    args: [PubChan$Ref, PubChan$ResolvedPipeline],
-  ) => void | Array<void | mixed> | mixed;
-
   constructor(pubchan: PubChan, options: $Shape<PubChan$Options>): Subscriber {
     this.callbacks = new Set();
     this.pathrefs = new Map();
-    // this.options = getSubscriberOptions(options);
     this.pubchan = pubchan;
     this.async = options.async === true;
     if (options.context) {
       this._context = options.context;
     }
-    this.callback = executeCallback;
     return this;
   }
 
@@ -161,12 +157,8 @@ class Subscriber {
     return this.callbacks.size;
   }
 
-  get keys(): Array<PubChan$EmitID> {
-    return Array.from(this.pathrefs.keys());
-  }
-
-  async(): Promise<Subscriber> {
-    return asynchronously(() => this);
+  get keys(): Set<PubChan$EmitID> {
+    return new Set(this.pathrefs.keys());
   }
 
   context(context: Object) {
@@ -175,9 +167,13 @@ class Subscriber {
   }
 
   to(...args: Array<PubChan$EmitIDs>) {
-    args.forEach(
-      el => (Array.isArray(el) ? this.to(...el) : addSubscriberToEvent(this, el)),
-    );
+    args.forEach(el => {
+      if (Array.isArray(el)) {
+        this.to(...el);
+      } else {
+        addSubscriberToEvent(this, el);
+      }
+    });
     return this;
   }
 
@@ -210,7 +206,7 @@ class Subscriber {
     removeSubscriber(this);
   }
 
-  trigger<P: PubChan$ResolvedPipeline>(pipeline: P, queue: AsyncQueue): void {
+  trigger<P: PubChan$ResolvedPipeline>(pipeline: P, queue: AsyncQueueType): void {
     this.callbacks.forEach(ref => {
       if (ref.once) {
         ref.cancel();
@@ -222,8 +218,8 @@ class Subscriber {
       }
       queue.push(
         this.async
-          ? () => this.callback.call(this._context || this, [ref, pipeline])
-          : this.callback.call(this._context || this, [ref, pipeline]),
+          ? () => executeCallback.call(this._context, [ref, pipeline])
+          : executeCallback.call(this._context, [ref, pipeline]),
       );
     });
   }
