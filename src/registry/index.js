@@ -19,6 +19,7 @@ function handleChanCreate(id: mixed, chan: PubChan) {
     .subscribe()
     .to(SUBSCRIBE_CLOSED)
     .do(ref => {
+      console.log('Pubchan Closed');
       PUBCHANS.delete(id);
       ref.cancel();
     });

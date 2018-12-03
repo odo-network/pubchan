@@ -6,49 +6,44 @@ import {
   SUBSCRIBE_SUBSCRIBERS_REMOVED,
 } from './src/lib';
 
-import registry from './src/registry';
+import registry, { hasPubChan } from './src/registry';
 
-const chan = registry.get(Symbol.for('@test'));
+const id = Symbol.for('@test');
+const chan = registry.get(id);
 
 chan
   .subscribe()
   .to(SUBSCRIBE_SUBSCRIBERS_REMOVED)
   .do((ref, ids, event, subscriber) => {
-    console.log('Subscriber Removed! ', subscriber);
-  });
-chan
-  .subscribe()
-  .to(SUBSCRIBE_SUBSCRIBERS_ADDED)
-  .do((ref, ids, event, subscriber) => {
-    console.log(
-      'Subscriber Added!: ',
-      subscriber === ref.subscription,
-      event,
-      subscriber.keys,
-    );
-    // console.log(chan.size);
-    // ref.cancel();
+    try {
+      console.log('Subscriber Removed! ', subscriber);
+      ref.cancel();
+      console.log('Close NOw');
+      chan.close();
+    } catch (e) {
+      console.log('Error: ', e);
+    }
   });
 
 chan
   .subscribe()
   .to(SUBSCRIBE_CLOSED)
   .do((ref, ids, event, subscriber) => {
-    // console.log(chan.size);
+    console.log('Closed!');
     ref.cancel();
   });
 
-chan
-  .subscribe()
-  .to(SUBSCRIBE_SUBSCRIBERS_ADDED)
-  .do((ref, ids, event, subscriber) => {
-    console.log(
-      'Subscribers Added 2!: ',
-      subscriber === ref.subscription,
-      event,
-      subscriber.keys,
-    );
-  });
+// chan
+//   .subscribe()
+//   .to(SUBSCRIBE_SUBSCRIBERS_ADDED)
+//   .do((ref, ids, event, subscriber) => {
+//     console.log(
+//       'Subscribers Added 2!: ',
+//       subscriber === ref.subscription,
+//       event,
+//       subscriber.keys,
+//     );
+//   });
 
 // chan
 //   .subscribe()
@@ -70,6 +65,7 @@ chan
   .to('one')
   .do(ref => {
     console.log(1);
+    console.log(hasPubChan(id));
     ref.cancel();
   });
 
@@ -108,6 +104,7 @@ chan
   .then(() => {
     console.log('Broadcast Next');
     // chan.broadcast().send('two');
+    console.log(hasPubChan(id));
   });
 
 // console.log('hi');

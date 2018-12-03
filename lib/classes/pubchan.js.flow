@@ -170,6 +170,13 @@ class PubChan {
     return this;
   }
 
+  filter(fn: (subscriber: Subscriber) => boolean) {
+    if (this.subscribers.size && this.pipeline && this.pipeline.matches.size > 0) {
+      this.pipeline.matches = new Set([...this.pipeline.matches].filter(fn));
+    }
+    return this;
+  }
+
   state(...args: Array<?PubChan$State>) {
     if (this.subscribers.size && this.pipeline && args.length) {
       this.pipeline.state = args.reduce(
@@ -233,10 +240,12 @@ class PubChan {
       this.listeners.has(SUBSCRIBE_SUBSCRIBERS_ALL)
       || this.listeners.has(SUBSCRIBE_SUBSCRIBERS_ADDED)
     ) {
+      const subscribersAtRequest = new Set(this.subscribers);
       asynchronously(() => {
         if (this.subscribers.has(subscriber)) {
           this.emit(SUBSCRIBE_SUBSCRIBERS_ALL, SUBSCRIBE_SUBSCRIBERS_ADDED)
             .with('added', subscriber)
+            .filter(match => match !== subscriber && subscribersAtRequest.has(match))
             .send();
         }
       });
@@ -244,13 +253,14 @@ class PubChan {
     return subscriber;
   }
 
-  subscriberRemoved() {
+  subscriberRemoved(subscriber: Subscriber) {
     if (
       this.listeners.has(SUBSCRIBE_SUBSCRIBERS_ALL)
       || this.listeners.has(SUBSCRIBE_SUBSCRIBERS_REMOVED)
     ) {
       this.emit(SUBSCRIBE_SUBSCRIBERS_ALL, SUBSCRIBE_SUBSCRIBERS_REMOVED)
         .with('removed')
+        .filter(match => match !== subscriber)
         .send();
     }
   }

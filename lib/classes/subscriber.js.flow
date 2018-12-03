@@ -15,6 +15,8 @@ import type { AsyncQueueType } from '../utils/queue';
 
 import type PubChan from './pubchan';
 
+import { IGNORED_SUBSCRIPTIONS } from '../constants';
+
 const ProxyObj = Object.freeze({});
 
 const StaticPropertyDescriptor = Object.freeze({
@@ -46,6 +48,7 @@ function addSubscriberToEvent(sub, e) {
 
 function removeSubscriber(sub) {
   sub._context = undefined;
+  let broadcastSubscriberEvent = false;
   sub.pathrefs.forEach((set, e) => {
     set.delete(sub);
     if (!set.size) {
@@ -55,12 +58,15 @@ function removeSubscriber(sub) {
         // cleanup the PubChan map when no other
         // listeners on this event exist
         sub.pubchan.listeners.delete(e);
+        if (!IGNORED_SUBSCRIPTIONS.includes(e)) {
+          broadcastSubscriberEvent = true;
+        }
       }
     }
   });
   sub.pathrefs.clear();
   sub.pubchan.subscribers.delete(sub);
-  sub.pubchan.subscriberRemoved();
+  if (broadcastSubscriberEvent) sub.pubchan.subscriberRemoved(sub);
 }
 
 function handleRefCancellation(sub: Subscriber, ref: PubChan$Ref) {
