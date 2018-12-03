@@ -7,7 +7,9 @@
   This also allows us to easily introspect our pubchans.
 */
 import type { PubChan } from '../lib';
-import createPubChanInstance, { SUBSCRIBE_ALL, SUBSCRIBE_CLOSED } from '../lib';
+import createPubChanInstance from '../lib';
+
+import { SUBSCRIBE_CLOSED } from '../lib/constants';
 
 const PUBCHANS: Map<any, PubChan> = new Map();
 
@@ -17,7 +19,6 @@ function handleChanCreate(id: mixed, chan: PubChan) {
     .subscribe()
     .to(SUBSCRIBE_CLOSED)
     .do(ref => {
-      console.log('Subscribe Closed Receives Message');
       PUBCHANS.delete(id);
       ref.cancel();
     });
@@ -73,11 +74,5 @@ const PubChanRegistry = Object.freeze({
 export default PubChanRegistry;
 
 export {
-  SUBSCRIBE_ALL,
-  SUBSCRIBE_CLOSED,
-  getPubChan,
-  hasPubChan,
-  pubChanKeys,
-  pubChanValues,
-  pubChanEntries,
+  getPubChan, hasPubChan, pubChanKeys, pubChanValues, pubChanEntries,
 };

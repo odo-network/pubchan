@@ -60,6 +60,7 @@ function removeSubscriber(sub) {
   });
   sub.pathrefs.clear();
   sub.pubchan.subscribers.delete(sub);
+  sub.pubchan.subscriberRemoved();
 }
 
 function handleRefCancellation(sub: Subscriber, ref: PubChan$Ref) {

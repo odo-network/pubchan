@@ -16,6 +16,16 @@ import type {
   PubChan$FnListeners,
 } from '../types';
 
+import {
+  SUBSCRIBE_ALL,
+  SUBSCRIBE_CLOSED,
+  BROADCAST,
+  SUBSCRIBE_SUBSCRIBERS_ADDED,
+  SUBSCRIBE_SUBSCRIBERS_REMOVED,
+  SUBSCRIBE_SUBSCRIBERS_ALL,
+  IGNORED_SUBSCRIPTIONS,
+} from '../constants';
+
 import Subscriber from './subscriber';
 import Middleware from './middleware';
 
@@ -23,24 +33,6 @@ import { asynchronously } from '../utils/async';
 import { frozenSet } from '../utils/freeze';
 
 import createAsyncQueue from '../utils/queue';
-
-export const SUBSCRIBE_ALL = Symbol.for('@pubchan/subscribe_all_emits');
-export const SUBSCRIBE_CLOSED = Symbol.for('@pubchan/subscribe_channel_closed');
-export const SUBSCRIBE_SUBSCRIBERS_ALL = Symbol.for('@pubchan/subscribe_subscribers_all');
-export const SUBSCRIBE_SUBSCRIBERS_ADDED = Symbol.for(
-  '@pubchan/subscribe_subscribers_added',
-);
-export const SUBSCRIBE_SUBSCRIBERS_REMOVED = Symbol.for(
-  '@pubchan/subscribe_subscribers_removed',
-);
-
-const IGNORED_SUBSCRIPTIONS = [
-  SUBSCRIBE_SUBSCRIBERS_ALL,
-  SUBSCRIBE_SUBSCRIBERS_ADDED,
-  SUBSCRIBE_SUBSCRIBERS_REMOVED,
-];
-
-export const BROADCAST = Symbol.for('@pubchan/broadcast');
 
 const BROADCAST_SET = frozenSet(new Set([BROADCAST]));
 
@@ -67,7 +59,7 @@ function filterSpecialSubscriptions(subscribers) {
     if (keys.size > IGNORED_SUBSCRIPTIONS.length) {
       return true;
     }
-    return [...keys].every(
+    return [...keys].some(
       key => !IGNORED_SUBSCRIPTIONS.includes(key) && key !== SUBSCRIBE_CLOSED,
     );
   });
@@ -97,11 +89,11 @@ class PubChan {
   }
 
   get length(): number {
-    return this.listeners.size + this.fnlisteners.size;
+    return filterSpecialSubscriptions(this.subscribers).length;
   }
 
   get size(): number {
-    return this.listeners.size + this.fnlisteners.size;
+    return filterSpecialSubscriptions(this.subscribers).length;
   }
 
   sizeof(...ids: Array<PubChan$EmitIDs>): number {

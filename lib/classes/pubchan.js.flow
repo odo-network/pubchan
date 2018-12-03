@@ -24,8 +24,22 @@ import { frozenSet } from '../utils/freeze';
 
 import createAsyncQueue from '../utils/queue';
 
-export const SUBSCRIBE_ALL = Symbol.for('@pubchan/all_emits');
-export const SUBSCRIBE_CLOSED = Symbol.for('@pubchan/channel_closed');
+export const SUBSCRIBE_ALL = Symbol.for('@pubchan/subscribe_all_emits');
+export const SUBSCRIBE_CLOSED = Symbol.for('@pubchan/subscribe_channel_closed');
+export const SUBSCRIBE_SUBSCRIBERS_ALL = Symbol.for('@pubchan/subscribe_subscribers_all');
+export const SUBSCRIBE_SUBSCRIBERS_ADDED = Symbol.for(
+  '@pubchan/subscribe_subscribers_added',
+);
+export const SUBSCRIBE_SUBSCRIBERS_REMOVED = Symbol.for(
+  '@pubchan/subscribe_subscribers_removed',
+);
+
+const IGNORED_SUBSCRIPTIONS = [
+  SUBSCRIBE_SUBSCRIBERS_ALL,
+  SUBSCRIBE_SUBSCRIBERS_ADDED,
+  SUBSCRIBE_SUBSCRIBERS_REMOVED,
+];
+
 export const BROADCAST = Symbol.for('@pubchan/broadcast');
 
 const BROADCAST_SET = frozenSet(new Set([BROADCAST]));
@@ -50,7 +64,12 @@ function resolvePipelineState(state: Array<PubChan$State>): PubChan$StateShape {
 function filterSpecialSubscriptions(subscribers) {
   return [...subscribers].filter(subscriber => {
     const { keys } = subscriber;
-    return !(keys.has(SUBSCRIBE_CLOSED) && keys.size === 1);
+    if (keys.size > IGNORED_SUBSCRIPTIONS.length) {
+      return true;
+    }
+    return [...keys].every(
+      key => !IGNORED_SUBSCRIPTIONS.includes(key) && key !== SUBSCRIBE_CLOSED,
+    );
   });
 }
 
@@ -110,12 +129,14 @@ class PubChan {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to emit to a closed pubchan');
     }
-    this.pipeline = {
-      ids: BROADCAST_SET,
-      with: [],
-      broadcast: true,
-      matches: new Set(filterSpecialSubscriptions(this.subscribers)),
-    };
+    if (this.subscribers.size) {
+      this.pipeline = {
+        ids: BROADCAST_SET,
+        with: [],
+        broadcast: true,
+        matches: new Set(filterSpecialSubscriptions(this.subscribers)),
+      };
+    }
     return this;
   }
 
@@ -123,16 +144,16 @@ class PubChan {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to emit to a closed pubchan');
     }
-    this.pipeline = {
-      with: [],
-      broadcast: false,
-      ids: new Set(),
-      matches: new Set(),
-    };
-    if (this.listeners.size) {
+    if (this.subscribers.size) {
+      this.pipeline = {
+        with: [],
+        broadcast: false,
+        ids: new Set(),
+        matches: new Set(),
+      };
       this.middleware.match(ids);
       const matchall = this.listeners.get(SUBSCRIBE_ALL);
-      if (matchall) {
+      if (matchall && !ids.every(id => IGNORED_SUBSCRIPTIONS.includes(id))) {
         matchall.forEach(match => this.pipeline.matches.add(match));
       }
     }
@@ -146,14 +167,19 @@ class PubChan {
   }
 
   with(...args: Array<any>) {
-    if (args.length && this.pipeline && this.pipeline.matches.size > 0) {
+    if (
+      this.subscribers.size
+      && this.pipeline
+      && args.length
+      && this.pipeline.matches.size > 0
+    ) {
       this.pipeline.with.push(...args);
     }
     return this;
   }
 
   state(...args: Array<?PubChan$State>) {
-    if (this.pipeline && args.length) {
+    if (this.subscribers.size && this.pipeline && args.length) {
       this.pipeline.state = args.reduce(
         (p, c) => p.concat(c || []),
         this.pipeline.state || [],
@@ -165,6 +191,8 @@ class PubChan {
   async send(...args: Array<any>): Promise<PubChan$EmitResponseRef> {
     if (this.closed) {
       throw new Error('[pubchan]: Tried to send to a closed pubchan');
+    } else if (!this.subscribers.size) {
+      return NULL_RESULT;
     } else if (!this.pipeline.matches.size) {
       if (this.pipeline.state) {
         return {
@@ -209,7 +237,30 @@ class PubChan {
       throw new Error('[pubchan]: Tried to subscribe to a closed pubchan');
     }
     const subscriber = new Subscriber(this, options);
+    if (
+      this.listeners.has(SUBSCRIBE_SUBSCRIBERS_ALL)
+      || this.listeners.has(SUBSCRIBE_SUBSCRIBERS_ADDED)
+    ) {
+      asynchronously(() => {
+        if (this.subscribers.has(subscriber)) {
+          this.emit(SUBSCRIBE_SUBSCRIBERS_ALL, SUBSCRIBE_SUBSCRIBERS_ADDED)
+            .with('added', subscriber)
+            .send();
+        }
+      });
+    }
     return subscriber;
+  }
+
+  subscriberRemoved() {
+    if (
+      this.listeners.has(SUBSCRIBE_SUBSCRIBERS_ALL)
+      || this.listeners.has(SUBSCRIBE_SUBSCRIBERS_REMOVED)
+    ) {
+      this.emit(SUBSCRIBE_SUBSCRIBERS_ALL, SUBSCRIBE_SUBSCRIBERS_REMOVED)
+        .with('removed')
+        .send();
+    }
   }
 
   async close(...args: Array<any>) {

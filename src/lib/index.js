@@ -15,6 +15,6 @@ export {
   SUBSCRIBE_SUBSCRIBERS_ALL,
   SUBSCRIBE_SUBSCRIBERS_ADDED,
   SUBSCRIBE_SUBSCRIBERS_REMOVED,
-} from './classes/pubchan';
+} from './constants';
 
 export { PubChan, Subscriber, Middleware };
