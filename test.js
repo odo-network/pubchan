@@ -17,9 +17,6 @@ chan
   .do((ref, ids, event, subscriber) => {
     try {
       console.log('Subscriber Removed! ', subscriber);
-      ref.cancel();
-      console.log('Close NOw');
-      chan.close();
     } catch (e) {
       console.log('Error: ', e);
     }
@@ -60,14 +57,9 @@ chan
 //     console.log('Subscribe All Executes: ', ids);
 //   });
 
-chan
-  .subscribe({ async: true })
-  .to('one')
-  .do(ref => {
-    console.log(1);
-    console.log(hasPubChan(id));
-    ref.cancel();
-  });
+setTimeout(() => {
+  chan.close();
+});
 
 // chan
 //   .subscribe()
@@ -98,14 +90,14 @@ chan
 //     console.log('DO 3!');
 //   });
 
-chan
-  .broadcast()
-  .send('one')
-  .then(() => {
-    console.log('Broadcast Next');
-    // chan.broadcast().send('two');
-    console.log(hasPubChan(id));
-  });
+// chan
+//   .broadcast()
+//   .send('one')
+//   .then(() => {
+//     console.log('Broadcast Next');
+//     // chan.broadcast().send('two');
+//     console.log(hasPubChan(id));
+//   });
 
 // console.log('hi');
 
