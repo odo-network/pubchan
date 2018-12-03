@@ -15,7 +15,7 @@ import type { AsyncQueueType } from '../utils/queue';
 
 import type PubChan from './pubchan';
 
-import { IGNORED_SUBSCRIPTIONS } from '../constants';
+import { SUBSCRIBE_CLOSED, IGNORED_SUBSCRIPTIONS } from '../constants';
 
 const ProxyObj = Object.freeze({});
 
@@ -58,7 +58,7 @@ function removeSubscriber(sub) {
         // cleanup the PubChan map when no other
         // listeners on this event exist
         sub.pubchan.listeners.delete(e);
-        if (!IGNORED_SUBSCRIPTIONS.includes(e)) {
+        if (!IGNORED_SUBSCRIPTIONS.includes(e) && e !== SUBSCRIBE_CLOSED) {
           broadcastSubscriberEvent = true;
         }
       }

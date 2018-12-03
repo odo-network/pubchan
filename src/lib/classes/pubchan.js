@@ -89,14 +89,17 @@ class PubChan {
   }
 
   get length(): number {
+    if (this.closed) return 0;
     return filterSpecialSubscriptions(this.subscribers).length;
   }
 
   get size(): number {
+    if (this.closed) return 0;
     return filterSpecialSubscriptions(this.subscribers).length;
   }
 
   sizeof(...ids: Array<PubChan$EmitIDs>): number {
+    if (this.closed) return 0;
     let size = 0;
     if (ids.length === 0) {
       this.listeners.forEach(listener => {
@@ -114,6 +117,7 @@ class PubChan {
   }
 
   setMiddleware(find?: PubChan$FindMiddleware, prepare?: PubChan$PrepareMiddleware) {
+    if (this.closed) return;
     this.middleware = new Middleware(this, find, prepare);
   }
 
@@ -153,6 +157,9 @@ class PubChan {
   }
 
   emitAsync(_ids: string | Array<PubChan$EmitIDs>, ...args: Array<any>) {
+    if (this.closed) {
+      throw new Error('[pubchan]: Tried to emit to a closed pubchan');
+    }
     const ids: Array<PubChan$EmitIDs> = Array.isArray(_ids) ? _ids : [_ids];
     const fn = () => this.emit(ids).send(...args);
     return asynchronously(fn);
@@ -160,7 +167,8 @@ class PubChan {
 
   with(...args: Array<any>) {
     if (
-      this.subscribers.size
+      !this.closed
+      && this.subscribers.size
       && this.pipeline
       && args.length
       && this.pipeline.matches.size > 0
@@ -171,6 +179,7 @@ class PubChan {
   }
 
   filter(fn: (subscriber: Subscriber) => boolean) {
+    if (this.closed) return this;
     if (this.subscribers.size && this.pipeline && this.pipeline.matches.size > 0) {
       this.pipeline.matches = new Set([...this.pipeline.matches].filter(fn));
     }
@@ -178,6 +187,7 @@ class PubChan {
   }
 
   state(...args: Array<?PubChan$State>) {
+    if (this.closed) return this;
     if (this.subscribers.size && this.pipeline && args.length) {
       this.pipeline.state = args.reduce(
         (p, c) => p.concat(c || []),
@@ -242,6 +252,7 @@ class PubChan {
     ) {
       const subscribersAtRequest = new Set(this.subscribers);
       asynchronously(() => {
+        if (this.closed) return;
         if (this.subscribers.has(subscriber)) {
           this.emit(SUBSCRIBE_SUBSCRIBERS_ALL, SUBSCRIBE_SUBSCRIBERS_ADDED)
             .with('added', subscriber)
@@ -255,8 +266,9 @@ class PubChan {
 
   subscriberRemoved(subscriber: Subscriber) {
     if (
-      this.listeners.has(SUBSCRIBE_SUBSCRIBERS_ALL)
-      || this.listeners.has(SUBSCRIBE_SUBSCRIBERS_REMOVED)
+      !this.closed
+      && (this.listeners.has(SUBSCRIBE_SUBSCRIBERS_ALL)
+        || this.listeners.has(SUBSCRIBE_SUBSCRIBERS_REMOVED))
     ) {
       this.emit(SUBSCRIBE_SUBSCRIBERS_ALL, SUBSCRIBE_SUBSCRIBERS_REMOVED)
         .with('removed')
@@ -270,15 +282,15 @@ class PubChan {
       this.closed = true;
       return null;
     }
-    let result;
+    let promise;
     if (this.listeners.has(SUBSCRIBE_CLOSED)) {
-      result = await this.emit(SUBSCRIBE_CLOSED)
+      promise = this.emit(SUBSCRIBE_CLOSED)
         .with(args)
         .send();
     }
     this.closed = true;
     this.subscribers.forEach(subscriber => subscriber.cancel());
-    return result;
+    return promise;
   }
 }
 
