@@ -266,7 +266,10 @@ class PubChan {
   }
 
   async close(...args: Array<any>) {
-    if (this.size === 0) return null;
+    if (this.subscribers.size === 0 || this.closed) {
+      this.closed = true;
+      return null;
+    }
     let result;
     if (this.listeners.has(SUBSCRIBE_CLOSED)) {
       result = await this.emit(SUBSCRIBE_CLOSED)
